@@ -17,11 +17,15 @@ export const FRONTEND_SIGNALS = [
   "mobile", "figma", "wireframe", "prototype", "storybook",
 ];
 
+// Pre-compiled word-boundary regexes to avoid substring false positives
+const BACKEND_REGEXES = BACKEND_SIGNALS.map((s) => new RegExp(`\\b${s}\\b`, "i"));
+const FRONTEND_REGEXES = FRONTEND_SIGNALS.map((s) => new RegExp(`\\b${s}\\b`, "i"));
+
 export function classifyTask(prompt) {
   const lower = prompt.toLowerCase();
   let back = 0, front = 0;
-  for (const s of BACKEND_SIGNALS) if (lower.includes(s)) back++;
-  for (const s of FRONTEND_SIGNALS) if (lower.includes(s)) front++;
+  for (const re of BACKEND_REGEXES) if (re.test(lower)) back++;
+  for (const re of FRONTEND_REGEXES) if (re.test(lower)) front++;
 
   if (back > 0 && front === 0) return "backend";
   if (front > 0 && back === 0) return "frontend";

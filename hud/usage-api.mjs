@@ -45,7 +45,7 @@ function readCache() {
 function writeCache(data, error = false) {
   try {
     mkdirSync(dirname(CACHE_PATH), { recursive: true });
-    writeFileSync(CACHE_PATH, JSON.stringify({ timestamp: Date.now(), data, error }));
+    writeFileSync(CACHE_PATH, JSON.stringify({ timestamp: Date.now(), data, error }), { mode: 0o600 });
   } catch { /* ignore */ }
 }
 
@@ -130,8 +130,8 @@ function writeBackCredentials(creds) {
     } else {
       existing = { ...existing, ...creds };
     }
-    const tmp = CREDENTIALS_PATH + ".tmp." + process.pid;
-    writeFileSync(tmp, JSON.stringify(existing, null, 2));
+    const tmp = CREDENTIALS_PATH + ".tmp." + process.pid + "." + Date.now();
+    writeFileSync(tmp, JSON.stringify(existing, null, 2), { mode: 0o600 });
     renameSync(tmp, CREDENTIALS_PATH);
   } catch { /* ignore - credential write-back is best-effort */ }
 }

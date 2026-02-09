@@ -126,14 +126,10 @@ async function main() {
 function out(context) {
   const result = { continue: true };
   if (context) {
-    // When we provide context, we want to PREVENT the stop
-    result.continue = true;
     result.hookSpecificOutput = {
       hookEventName: "Stop",
       additionalContext: context,
     };
-    // Signal to keep going
-    result.stopReason = "continuation_enforced";
   }
   console.log(JSON.stringify(result));
 }

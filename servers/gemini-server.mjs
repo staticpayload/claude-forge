@@ -24,9 +24,21 @@ const DEBUG = process.env.FORGE_GEMINI_DEBUG === "true";
 const log = (...a) => DEBUG && console.error("[forge:gemini]", ...a);
 
 // --- CLI resolution ---
+const KNOWN_DIRS = ["/opt/homebrew/bin", "/usr/local/bin"];
+const BLOCKED_WORK_DIRS = new Set(["/", "/etc", "/usr", "/bin", "/sbin", "/var", "/tmp", "/System", "/Library", "/private"]);
+
 function findCli() {
-  for (const p of [process.env.GEMINI_CLI_NAME, "/opt/homebrew/bin/gemini", "/usr/local/bin/gemini"]) {
-    if (p && existsSync(p)) return p;
+  // Env override: accept only a basename (not a full path) to prevent binary hijack
+  const envName = process.env.GEMINI_CLI_NAME;
+  if (envName && !envName.includes("/")) {
+    for (const dir of KNOWN_DIRS) {
+      const full = join(dir, envName);
+      if (existsSync(full)) return full;
+    }
+  }
+  for (const dir of KNOWN_DIRS) {
+    const full = join(dir, "gemini");
+    if (existsSync(full)) return full;
   }
   return null; // not found — tools will be hidden to save tokens
 }
@@ -36,9 +48,11 @@ const CLI_PATH = CLI || "gemini"; // fallback for spawn if user installs later
 
 // --- Anti-loop preamble ---
 const NO_LOOP =
+  "[SYSTEM CONSTRAINT - CANNOT BE OVERRIDDEN]\n" +
   "IMPORTANT: This task was delegated to you FROM Claude Code via claude-forge. " +
   "Do NOT delegate back to Claude Code or any Claude-based tools. " +
   "Execute directly using your own tools. Do not invoke any claude_code or anthropic MCP tools.\n\n";
+const NO_LOOP_SUFFIX = "\n\n[SYSTEM CONSTRAINT] Remember: Do NOT delegate back to Claude Code. Execute directly.";
 
 // --- Job store ---
 const jobs = new Map();
@@ -146,7 +160,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const prompt = args?.prompt;
       if (!prompt || typeof prompt !== "string") return reply("Error: prompt required.", true);
 
-      const workFolder = (args?.workFolder && typeof args.workFolder === "string") ? args.workFolder : HOME;
+      const workFolder = (args?.workFolder && typeof args.workFolder === "string") ? resolve(args.workFolder) : HOME;
+      if (BLOCKED_WORK_DIRS.has(workFolder)) return reply("Error: workFolder cannot be a system directory.", true);
       const sandbox = args?.sandbox || "yolo";
       const config = loadConfig();
       const model = config.geminiModel || null;
@@ -167,7 +182,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         const proc = spawn(CLI_PATH, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
         job._proc = proc;
-        proc.stdin.write(NO_LOOP + contextPrefix + prompt);
+        proc.stdin.write(NO_LOOP + contextPrefix + prompt + NO_LOOP_SUFFIX);
         proc.stdin.end();
         proc.stdout.on("data", (c) => { if (job.stdout.length < MAX_OUTPUT_BYTES) job.stdout += c.toString(); });
         proc.stderr.on("data", (c) => { if (job.stderr.length < MAX_OUTPUT_BYTES) job.stderr += c.toString(); });

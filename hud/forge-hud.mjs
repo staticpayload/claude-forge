@@ -54,7 +54,7 @@ function loadConfig() {
 }
 
 function gitBranch(cwd) {
-  try { return execSync("git rev-parse --abbrev-ref HEAD 2>/dev/null", { cwd, encoding: "utf-8" }).trim() || null; } catch { return null; }
+  try { return execSync("git rev-parse --abbrev-ref HEAD 2>/dev/null", { cwd, encoding: "utf-8", timeout: 3000 }).trim() || null; } catch { return null; }
 }
 
 function bar(pct, width = 8) {

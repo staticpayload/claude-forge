@@ -1,0 +1,14 @@
+{
+  "name": "claude-forge",
+  "version": "1.0.0",
+  "description": "Bidirectional delegation between Claude Code, Codex CLI, and Gemini CLI",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/staticpayload/claude-forge"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.2"
+  }
+}

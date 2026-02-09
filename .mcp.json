@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "codex": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/codex-server.mjs"]
+    },
+    "gemini": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/servers/gemini-server.mjs"]
+    }
+  }
+}

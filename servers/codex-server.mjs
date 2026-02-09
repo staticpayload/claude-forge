@@ -1,0 +1,228 @@
+#!/usr/bin/env node
+// codex-server — Async Codex CLI delegation for claude-forge
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { homedir } from "node:os";
+
+const HOME = homedir();
+const MAX_JOBS = 50;
+const DEBUG = process.env.FORGE_CODEX_DEBUG === "true";
+const log = (...a) => DEBUG && console.error("[forge:codex]", ...a);
+
+// --- CLI resolution ---
+function findCli() {
+  for (const p of [process.env.CODEX_CLI_NAME, "/usr/local/bin/codex", "/opt/homebrew/bin/codex"]) {
+    if (p && existsSync(p)) return p;
+  }
+  return "codex";
+}
+const CLI = findCli();
+
+// --- Anti-loop preamble ---
+const NO_LOOP =
+  "IMPORTANT: This task was delegated to you FROM Claude Code via claude-forge. " +
+  "Do NOT delegate back to Claude Code via the claude_code MCP tool. " +
+  "Execute directly using your own tools. Do not call any claude_code_* tools.\n\n";
+
+// --- Job store ---
+const jobs = new Map();
+function prune() {
+  const done = [...jobs.entries()].filter(([, j]) => j.status !== "running");
+  if (done.length > MAX_JOBS) {
+    done.sort((a, b) => (a[1].endTime || 0) - (b[1].endTime || 0))
+      .slice(0, done.length - MAX_JOBS)
+      .forEach(([id]) => jobs.delete(id));
+  }
+}
+
+// --- Context file reader ---
+function readContextFiles(files) {
+  if (!Array.isArray(files) || files.length === 0) return "";
+  const parts = [];
+  for (const f of files) {
+    try {
+      if (!existsSync(f)) continue;
+      const stat = statSync(f);
+      if (!stat.isFile() || stat.size > 5 * 1024 * 1024) continue;
+      parts.push(`--- File: ${f} ---\n${readFileSync(f, "utf-8")}\n`);
+    } catch { /* skip unreadable files */ }
+  }
+  return parts.length > 0 ? parts.join("\n") + "\n" : "";
+}
+
+// --- MCP Server ---
+const server = new Server(
+  { name: "forge-codex", version: "1.0.0" },
+  { capabilities: { tools: {} } },
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: "codex_exec",
+      description:
+        "Delegate backend work to Codex CLI (OpenAI gpt-5.3-codex). Returns job ID instantly. " +
+        "AUTO-DELEGATE: API endpoints, data pipelines, scripts, CLI tools, infra, " +
+        "backend services, database work, server-side logic, build tooling. " +
+        "Poll codex_status until done. Cancel with codex_cancel.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          prompt: { type: "string", description: "Task for Codex. Include file paths and verification steps." },
+          workFolder: { type: "string", description: "Absolute path to project root. Defaults to $HOME." },
+          model: { type: "string", description: "Model override. Default: gpt-5.3-codex. Alt: o3, o4-mini." },
+          sandbox: {
+            type: "string",
+            enum: ["yolo", "full-auto", "workspace-write", "read-only"],
+            description: "Sandbox policy. Default: yolo.",
+          },
+          context_files: {
+            type: "array", items: { type: "string" },
+            description: "File paths to read and prepend as context (max 5MB each).",
+          },
+        },
+        required: ["prompt"],
+      },
+    },
+    {
+      name: "codex_status",
+      description: "Long-poll a Codex job (up to 25s). Returns output when done, or partial tail if running.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          jobId: { type: "string", description: "Job ID from codex_exec." },
+          waitSeconds: { type: "number", description: "Max wait (default 25, max 25). 0 for instant." },
+        },
+        required: ["jobId"],
+      },
+    },
+    {
+      name: "codex_cancel",
+      description: "Cancel a running Codex job.",
+      inputSchema: {
+        type: "object",
+        properties: { jobId: { type: "string" } },
+        required: ["jobId"],
+      },
+    },
+    {
+      name: "codex_list",
+      description: "List all Codex jobs. Newest first.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          status: { type: "string", enum: ["all", "running", "completed", "failed", "cancelled"] },
+        },
+      },
+    },
+  ],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  switch (name) {
+    case "codex_exec": {
+      const prompt = args?.prompt;
+      if (!prompt || typeof prompt !== "string") return reply("Error: prompt required.", true);
+
+      const workFolder = (args?.workFolder && typeof args.workFolder === "string") ? args.workFolder : HOME;
+      const sandbox = args?.sandbox || "yolo";
+      const model = args?.model || null;
+      const contextPrefix = readContextFiles(args?.context_files);
+
+      const jobId = randomUUID().slice(0, 8);
+      const job = { id: jobId, status: "running", stdout: "", stderr: "", startTime: Date.now(), endTime: null, exitCode: null, promptPreview: prompt.slice(0, 200), workFolder, _proc: null };
+
+      log(`Job ${jobId} in ${workFolder}`);
+
+      const cliArgs = ["exec"];
+      if (sandbox === "yolo") cliArgs.push("--yolo");
+      else if (sandbox === "full-auto") cliArgs.push("--full-auto");
+      else cliArgs.push("--sandbox", sandbox);
+      cliArgs.push("-C", workFolder);
+      if (model) cliArgs.push("-m", model);
+      cliArgs.push("-"); // read from stdin
+
+      try {
+        const proc = spawn(CLI, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
+        job._proc = proc;
+        proc.stdin.write(NO_LOOP + contextPrefix + prompt);
+        proc.stdin.end();
+        proc.stdout.on("data", (c) => { job.stdout += c.toString(); });
+        proc.stderr.on("data", (c) => { job.stderr += c.toString(); });
+        proc.on("close", (code) => { job.status = code === 0 ? "completed" : "failed"; job.exitCode = code; job.endTime = Date.now(); job._proc = null; log(`Job ${jobId} done: ${code}`); prune(); });
+        proc.on("error", (err) => { job.status = "failed"; job.stderr += `\nSpawn error: ${err.message}`; job.endTime = Date.now(); job._proc = null; });
+      } catch (err) {
+        job.status = "failed"; job.stderr = `Spawn failed: ${err.message}`; job.endTime = Date.now();
+      }
+
+      jobs.set(jobId, job);
+      return reply({ jobId, status: "running", message: `Codex job started. Poll codex_status("${jobId}").` });
+    }
+
+    case "codex_status": {
+      const jobId = args?.jobId;
+      if (!jobId) return reply("Error: jobId required.", true);
+      const job = jobs.get(jobId);
+      if (!job) return reply(`No job "${jobId}". Use codex_list.`, true);
+
+      const maxWait = Math.min(Math.max(0, Number(args?.waitSeconds ?? 25)), 25);
+      if (job.status === "running" && maxWait > 0) {
+        const deadline = Date.now() + maxWait * 1000;
+        await new Promise((r) => { const iv = setInterval(() => { if (job.status !== "running" || Date.now() >= deadline) { clearInterval(iv); r(); } }, 500); });
+      }
+
+      const elapsed = Math.round(((job.endTime || Date.now()) - job.startTime) / 1000);
+      const result = { jobId: job.id, status: job.status, elapsedSeconds: elapsed, workFolder: job.workFolder };
+      if (job.exitCode !== null) result.exitCode = job.exitCode;
+      if (job.status === "running") {
+        const tail = job.stdout.slice(-3000);
+        result.outputTail = tail.length < job.stdout.length ? `...(${job.stdout.length} chars)...\n${tail}` : tail || "(no output yet)";
+        result.hint = "Still running. Call codex_status again.";
+      } else {
+        result.output = job.stdout || "(no output)";
+      }
+      if (job.stderr && job.status === "failed") result.error = job.stderr.slice(-2000);
+      return reply(result);
+    }
+
+    case "codex_cancel": {
+      const jobId = args?.jobId;
+      if (!jobId) return reply("Error: jobId required.", true);
+      const job = jobs.get(jobId);
+      if (!job) return reply(`No job "${jobId}".`, true);
+      if (job.status !== "running") return reply(`Job ${jobId} already ${job.status}.`);
+      if (job._proc) { job._proc.kill("SIGTERM"); setTimeout(() => { if (job._proc) try { job._proc.kill("SIGKILL"); } catch {} }, 5000); }
+      job.status = "cancelled"; job.endTime = Date.now(); job._proc = null;
+      return reply(`Job ${jobId} cancelled.`);
+    }
+
+    case "codex_list": {
+      const filter = args?.status || "all";
+      const entries = [...jobs.values()]
+        .filter((j) => filter === "all" || j.status === filter)
+        .map((j) => ({ jobId: j.id, status: j.status, elapsedSeconds: Math.round(((j.endTime || Date.now()) - j.startTime) / 1000), promptPreview: j.promptPreview, workFolder: j.workFolder }))
+        .reverse();
+      return reply(entries.length > 0 ? entries : "No jobs found.");
+    }
+
+    default: return reply(`Unknown tool: ${name}`, true);
+  }
+});
+
+function reply(data, isError = false) {
+  const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+  return { content: [{ type: "text", text }], ...(isError && { isError: true }) };
+}
+
+async function main() {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+  log("forge-codex running");
+}
+main().catch((e) => { console.error("Fatal:", e); process.exit(1); });

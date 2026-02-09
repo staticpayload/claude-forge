@@ -1,3 +1,5 @@
+<div align="center">
+
 ```
       _                 _             __
   ___| | __ _ _   _  __| | ___       / _| ___  _ __ __ _  ___
@@ -7,15 +9,17 @@
                                                     |___/
 ```
 
-# claude-forge
+### Multi-CLI Delegation & Orchestration for Claude Code
 
-**Multi-CLI delegation and orchestration for Claude Code.**
-
-Route backend work to [Codex CLI](https://github.com/openai/codex), frontend work to [Gemini CLI](https://github.com/google-gemini/gemini-cli), and orchestrate everything through 42 skills, intelligent auto-routing, and parallel execution modes.
+Route backend to **Codex CLI** (GPT-5.3) &bull; Frontend to **Gemini CLI** (1M context) &bull; **42 skills** &bull; Parallel execution
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
+[![Skills](https://img.shields.io/badge/Skills-42-orange.svg)](#skills-reference)
+[![Agents](https://img.shields.io/badge/Agents-30-teal.svg)](#architecture)
+
+</div>
 
 ---
 
@@ -23,53 +27,15 @@ Route backend work to [Codex CLI](https://github.com/openai/codex), frontend wor
 
 Claude Code is powerful on its own. But it's a single brain. claude-forge turns it into a **command center** that delegates to specialized AI agents:
 
-| Problem | Without forge | With forge |
-|---------|--------------|------------|
-| Backend API work | Claude does it alone | Codex CLI handles it autonomously (GPT-5.3) |
-| Frontend components | Claude does it alone | Gemini CLI handles it (1M token context) |
-| Large refactors | Sequential, slow | Parallel execution across multiple agents |
-| Code reviews | One perspective | Cross-review from Claude + Codex + Gemini |
-| Complex features | Hope it works | Autopilot: spec -> plan -> build -> test -> verify |
+| | Without forge | With forge |
+|:---|:---|:---|
+| **Backend API work** | Claude does it alone | Codex CLI handles it autonomously |
+| **Frontend components** | Claude does it alone | Gemini CLI handles it (1M token context) |
+| **Large refactors** | Sequential, slow | Parallel execution across multiple agents |
+| **Code reviews** | One perspective | Cross-review from Claude + Codex + Gemini |
+| **Complex features** | Hope it works | Autopilot: spec &rarr; plan &rarr; build &rarr; test &rarr; verify |
 
-**The core idea:** Claude Code becomes the orchestrator. It reads your codebase, understands your intent, classifies the task, and delegates to the right specialist. You get the combined intelligence of three frontier AI models working in parallel.
-
----
-
-## Table of Contents
-
-- [Quick Start](#quick-start)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [How It Works](#how-it-works)
-- [Skills Reference](#skills-reference)
-  - [Execution Modes](#execution-modes)
-  - [Orchestration](#orchestration)
-  - [Planning & Research](#planning--research)
-  - [CLI Delegation](#cli-delegation)
-  - [Code Quality](#code-quality)
-  - [Analysis](#analysis)
-  - [Productivity](#productivity)
-  - [Specialist Agents](#specialist-agents)
-  - [Configuration](#configuration)
-- [Intelligent Features](#intelligent-features)
-  - [Magic Keywords](#magic-keywords)
-  - [Automatic Task Routing](#automatic-task-routing)
-  - [Complexity Scoring](#complexity-scoring)
-  - [Task Decomposition](#task-decomposition)
-  - [Continuation Enforcement](#continuation-enforcement)
-  - [Context Monitoring](#context-monitoring)
-- [HUD System](#hud-system)
-- [Architecture](#architecture)
-  - [MCP Servers](#mcp-servers)
-  - [Hook System](#hook-system)
-  - [Anti-Loop Protection](#anti-loop-protection)
-  - [File Structure](#file-structure)
-- [Configuration](#configuration-1)
-- [Examples](#examples)
-- [Comparison](#comparison)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
+> **The core idea:** Claude Code becomes the orchestrator. It reads your codebase, understands your intent, classifies the task, and delegates to the right specialist. You get the combined intelligence of three frontier AI models working in parallel.
 
 ---
 
@@ -86,328 +52,283 @@ Claude Code is powerful on its own. But it's a single brain. claude-forge turns 
 /claude-forge:setup
 ```
 
-That's it. Start a new Claude Code session and forge is active. Try it:
+Start a new session and try:
 
 ```
 "forge this: build a REST API for user authentication with JWT"
 ```
 
-Claude will auto-route this to Codex CLI (backend signals detected), and you'll see Codex working autonomously while Claude monitors progress.
+Claude auto-routes this to Codex CLI (backend signals detected) and monitors progress.
 
 ---
 
 ## Prerequisites
 
-**Required:**
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (v2.0+)
-- [Node.js](https://nodejs.org) >= 18.0.0
+**Required:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code) v2.0+ &bull; [Node.js](https://nodejs.org) >= 18
 
-**Optional (but recommended):**
-- [Codex CLI](https://github.com/openai/codex) - for backend delegation
-  ```bash
-  npm install -g @openai/codex
-  ```
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli) - for frontend delegation
-  ```bash
-  npm install -g @anthropic-ai/gemini-cli
-  # or via Homebrew
-  brew install gemini-cli
-  ```
-
-> **Note:** claude-forge works without either CLI installed. Skills that need a missing CLI will fall back to Claude's built-in agents. You can install CLIs later and run `/claude-forge:enable-codex` or `/claude-forge:enable-gemini`.
-
----
-
-## Installation
-
-### From Marketplace (Recommended)
+**Optional (recommended):**
 
 ```bash
-# In any Claude Code session:
-/plugin marketplace add https://github.com/staticpayload/claude-forge
-/plugin install claude-forge
+# Codex CLI - backend delegation
+npm install -g @openai/codex
+
+# Gemini CLI - frontend delegation
+npm install -g @anthropic-ai/gemini-cli
 ```
 
-### From Local Directory
-
-```bash
-# Clone the repo
-git clone https://github.com/staticpayload/claude-forge.git
-cd claude-forge
-npm install
-
-# Install as local plugin
-/plugin add /path/to/claude-forge
-```
-
-### Verify Installation
-
-Start a new Claude Code session. You should see:
-
-```
-claude-forge active. Codex CLI ready (/opt/homebrew/bin/codex) - backend delegation available.
-Gemini CLI ready (/opt/homebrew/bin/gemini) - frontend delegation available.
-```
-
-Or run the diagnostics:
-
-```
-/claude-forge:doctor
-```
-
-This checks: plugin registration, MCP server health, CLI availability, hook wiring, skill discovery, and configuration.
+> claude-forge works without either CLI. Skills fall back to Claude's built-in agents. Install CLIs later with `/claude-forge:enable-codex` or `/claude-forge:enable-gemini`.
 
 ---
 
 ## How It Works
 
 ```
-                          ┌─────────────────┐
-                          │   Your Prompt    │
-                          └────────┬────────┘
-                                   │
-                          ┌────────▼────────┐
-                          │  Keyword Router  │  (UserPromptSubmit hook)
-                          │  95 patterns     │
-                          │  Magic keywords  │
-                          │  Complexity score│
-                          └────────┬────────┘
-                                   │
-                    ┌──────────────┼──────────────┐
-                    │              │              │
-           ┌───────▼──────┐ ┌────▼─────┐ ┌─────▼──────┐
-           │ Skill Router │ │ Auto-    │ │  Direct    │
-           │ 42 skills    │ │ Classify │ │  Execution │
-           │ /forge:xxx   │ │ backend/ │ │  (simple)  │
-           └───────┬──────┘ │ frontend │ └────────────┘
-                   │        └────┬─────┘
-                   │             │
-        ┌──────────┼─────────────┼──────────┐
-        │          │             │          │
-   ┌────▼───┐ ┌───▼────┐ ┌─────▼───┐ ┌───▼────────┐
-   │ Codex  │ │ Gemini │ │ Built-in│ │  Parallel  │
-   │  CLI   │ │  CLI   │ │ Agents  │ │  All Three │
-   │(backend│ │(frontend│ │(fallback│ │  (review)  │
-   └────────┘ └────────┘ └─────────┘ └────────────┘
+                        ┌─────────────────┐
+                        │   Your Prompt    │
+                        └────────┬────────┘
+                                 │
+                        ┌────────▼────────┐
+                        │  Keyword Router  │  UserPromptSubmit hook
+                        │  95 patterns     │  Magic keywords
+                        │  Complexity score│  Task classification
+                        └────────┬────────┘
+                                 │
+                  ┌──────────────┼──────────────┐
+                  │              │              │
+         ┌───────▼──────┐ ┌────▼─────┐ ┌─────▼──────┐
+         │ Skill Router │ │  Auto-   │ │   Direct   │
+         │  42 skills   │ │ Classify │ │  Execution │
+         └───────┬──────┘ └────┬─────┘ └────────────┘
+                 │             │
+      ┌──────────┼─────────────┼──────────┐
+      │          │             │          │
+ ┌────▼───┐ ┌───▼────┐ ┌─────▼───┐ ┌───▼────────┐
+ │ Codex  │ │ Gemini │ │ Built-in│ │  Parallel  │
+ │  CLI   │ │  CLI   │ │ Agents  │ │  All Three │
+ └────────┘ └────────┘ └─────────┘ └────────────┘
 ```
 
-1. **Every prompt** passes through the keyword router hook (95 regex patterns)
-2. **Skill keywords** trigger specific workflows (e.g., "autopilot" activates the 5-phase autonomous pipeline)
-3. **Magic keywords** inject enhanced behavior (e.g., "ultrawork" activates parallel execution mode)
-4. **Task classification** detects backend/frontend signals and suggests CLI delegation
-5. **Complexity scoring** routes to appropriate model tier (Haiku < Sonnet < Opus)
+1. **Every prompt** passes through the keyword router (95 regex patterns)
+2. **Skill keywords** trigger workflows &mdash; "autopilot" activates the 5-phase pipeline
+3. **Magic keywords** inject behavior &mdash; "ultrawork" enables parallel execution
+4. **Task classification** detects backend/frontend signals for CLI delegation
+5. **Complexity scoring** routes to the right model tier (Haiku &lt; Sonnet &lt; Opus)
 
 ---
 
 ## Skills Reference
 
-### Execution Modes
+<details>
+<summary><b>Execution Modes</b> &mdash; Persistent modes that change how Claude operates</summary>
 
-The big five. These are persistent execution modes that change how Claude operates.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `autopilot` | "autopilot", "build me" | Full pipeline: expansion &rarr; planning &rarr; execution &rarr; QA &rarr; validation. 5 phases, resumable. |
+| `ralph` | "ralph", "don't stop" | Persistence loop. Works &rarr; architect verifies &rarr; repeats until done. Max 10 iterations. |
+| `ultrawork` | "ultrawork", "ulw" | Parallel engine. Decomposes tasks, assigns file ownership, runs multiple agents simultaneously. |
+| `ecomode` | "ecomode", "budget mode" | Token-efficient routing. Haiku for simple, Sonnet for medium, Opus only when needed. 3-5x cheaper. |
+| `ultraqa` | "ultraqa", "make tests pass" | QA cycling: test &rarr; diagnose &rarr; fix &rarr; repeat. Max 5 cycles with same-failure detection. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:autopilot` | "autopilot", "build me", "I want a" | Full autonomous pipeline: expansion -> planning -> execution -> QA -> validation. 5 phases, state tracking, resumable. |
-| `/claude-forge:ralph` | "ralph", "don't stop", "must complete" | Persistence loop. Works -> architect verifies -> repeats until done. Max 10 iterations. Named after Sisyphus - the boulder never stops. |
-| `/claude-forge:ultrawork` | "ultrawork", "ulw", "maximum performance" | Parallel execution engine. Decomposes tasks, assigns file ownership, runs multiple agents simultaneously. Maximum throughput. |
-| `/claude-forge:ecomode` | "ecomode", "budget mode" | Token-efficient routing. Haiku for simple tasks, Sonnet for medium, Opus only when necessary. Cuts costs 3-5x. |
-| `/claude-forge:ultraqa` | "ultraqa", "qa loop", "make tests pass" | QA cycling: test -> diagnose -> fix -> repeat. Supports `--tests`, `--build`, `--lint`, `--typecheck`. Max 5 cycles with same-failure detection. |
+**Composability:** Ralph includes ultrawork. Ecomode modifies routing for any mode. Autopilot can transition to ralph or ultraqa.
 
-**Composability:** Ralph includes ultrawork. Ecomode modifies model routing for any mode. Autopilot can transition to ralph or ultraqa internally.
+</details>
 
-### Orchestration
+<details>
+<summary><b>Orchestration</b> &mdash; Multi-agent coordination</summary>
 
-Multi-agent coordination for complex work.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `ultrapilot` | "ultrapilot", "parallel build" | Parallel autopilot. Architect decomposes, up to 5 workers execute with file ownership partitioning. |
+| `team` | "forge team", "spawn agents" | N coordinated agents on shared task list. File ownership prevents conflicts. |
+| `pipeline` | "pipeline", "chain agents" | Sequential agent chains with data passing. 6 presets: review, implement, debug, research, refactor, security. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:ultrapilot` | "ultrapilot", "parallel build", "fast autopilot" | Parallel autopilot. Architect decomposes task, up to 5 workers execute simultaneously with file ownership partitioning. |
-| `/claude-forge:team` | "forge team", "coordinated team", "spawn agents" | N coordinated agents on shared task list. File ownership prevents conflicts. Workers claim tasks, report progress, hand off. |
-| `/claude-forge:pipeline` | "pipeline", "chain agents" | Sequential agent chains with data passing. 6 built-in presets: `review`, `implement`, `debug`, `research`, `refactor`, `security`. Custom chains supported. |
+</details>
 
-### Planning & Research
+<details>
+<summary><b>Planning & Research</b> &mdash; Think before you build</summary>
 
-Think before you build.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `plan` | "plan this", "--consensus" | Strategic planning with 4 modes: interview, direct, consensus (3 architects), review (critic challenges). |
+| `research` | "research this" | Parallel scientists. Decomposes into 3-7 sub-questions, cross-validates, synthesizes with confidence levels. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:plan` | "plan this/the/it", "make a plan", "--consensus" | Strategic planning with 4 modes: interview, direct, consensus (3 independent architects), and review (critic challenges plan). Quality gate: 80% file references, 90% concrete criteria. |
-| `/claude-forge:research` | "research this/the/it", "investigate thoroughly" | Parallel scientist agents. Decomposes question into 3-7 sub-questions, assigns each to a scientist, cross-validates findings, synthesizes evidence-based report with confidence levels. |
+</details>
 
-### CLI Delegation
+<details>
+<summary><b>CLI Delegation</b> &mdash; Direct control over routing</summary>
 
-Direct control over which CLI handles what.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `forge` | "forge this", "auto-route" | Intelligent auto-routing by signal classification. Falls back to built-in agents. |
+| `review` | "forge review", "cross-review" | Parallel review: Codex (logic/security) + Gemini (design/UX). Deduplicated findings. |
+| `backend` | "use codex", "delegate to codex" | Direct Codex CLI delegation with anti-loop preamble. |
+| `frontend` | "use gemini", "delegate to gemini" | Direct Gemini CLI delegation with 1M token context. |
+| `backend-agent` | "backend agent" | Backend via Claude's built-in agents (no CLI needed). |
+| `frontend-agent` | "frontend agent" | Frontend via Claude's built-in agents (no CLI needed). |
+| `parallel` | "forge parallel", "split this up" | Decompose + parallel multi-CLI execution in waves. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:forge` | "forge this/it", "auto-route" | Intelligent auto-routing. Classifies task by signal words, routes to best CLI. Falls back to built-in agents if CLI unavailable. |
-| `/claude-forge:review` | "forge review", "cross-review", "multi-review" | Parallel review via both CLIs. Codex reviews logic/security/performance. Gemini reviews design/maintainability/UX. Findings synthesized and deduplicated. |
-| `/claude-forge:backend` | "use codex", "backend this", "delegate to codex" | Direct Codex CLI delegation. Prompt goes to Codex with anti-loop preamble. Polls until completion. |
-| `/claude-forge:frontend` | "use gemini", "frontend this", "delegate to gemini" | Direct Gemini CLI delegation. Prompt goes to Gemini with 1M token context. Polls until completion. |
-| `/claude-forge:backend-agent` | "backend agent" | Backend work via Claude's built-in agents (no CLI needed). Uses executor/debugger agents. |
-| `/claude-forge:frontend-agent` | "frontend agent" | Frontend work via Claude's built-in agents (no CLI needed). Uses designer agent. |
-| `/claude-forge:parallel` | "forge parallel", "split this/it up" | Task decomposition for parallel multi-CLI execution. Analyzes task, identifies backend/frontend components, executes in parallel waves. |
+</details>
 
-### Code Quality
+<details>
+<summary><b>Code Quality</b> &mdash; Reviews, testing, standards</summary>
 
-Reviews, testing, and standards enforcement.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `code-review` | "code review", "review code" | 5-dimension review: security, quality, performance, best practices, maintainability. Severity-rated. |
+| `security-review` | "security review", "owasp" | OWASP Top 10 mapping. Injection, broken auth, XSS, SSRF, misconfigs. Remediation priorities. |
+| `tdd` | "tdd", "test first" | Red-Green-Refactor enforcement. One failing test &rarr; minimum code to pass &rarr; refactor. |
+| `build-fix` | "build-fix", "fix type errors" | Minimal-diff build fixing. No refactoring, no architecture changes. Stops when build passes. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:code-review` | "code review", "review code/pr" | 5-dimension review: security, quality, performance, best practices, maintainability. Each finding rated CRITICAL/HIGH/MEDIUM/LOW. Verdict: APPROVE or REQUEST CHANGES. |
-| `/claude-forge:security-review` | "security review/audit", "owasp" | OWASP Top 10 mapping. Scans for injection, broken auth, XSS, SSRF, misconfigs. Checks for hardcoded secrets. Auth/authz boundary review. Remediation priority table. |
-| `/claude-forge:tdd` | "tdd", "test first", "red green refactor" | Red-Green-Refactor enforcement. Write ONE failing test -> implement MINIMUM code to pass -> refactor. Strict cycle discipline. |
-| `/claude-forge:build-fix` | "build-fix", "fix type errors" | Minimal-diff build error fixing. Read error -> fix -> verify. No refactoring, no architecture changes. Stops when build passes. |
+</details>
 
-### Analysis
+<details>
+<summary><b>Analysis</b> &mdash; Deep investigation and search</summary>
 
-Deep investigation and search.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `analyze` | "forge analyze", "root cause" | 4 types: architecture, bug, performance, dependency. Separates facts from hypotheses. |
+| `deepsearch` | "deepsearch" | Exhaustive codebase search. Multiple strategies, never stops at first result. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:analyze` | "forge analyze", "root cause", "diagnose" | 4 investigation types: architecture, bug, performance, dependency. Separates facts from hypotheses. Multiple evidence sources. |
-| `/claude-forge:deepsearch` | "deepsearch" | Exhaustive codebase search. Never stops at first result. Strategy: broad search -> deep dive each match -> cross-reference -> synthesize. Covers: code, comments, configs, tests, docs. |
+</details>
 
-### Productivity
+<details>
+<summary><b>Productivity</b> &mdash; Daily workflow tools</summary>
 
-Tools that make daily work faster.
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `worktree` | "worktree" | Git worktree manager for parallel feature development. |
+| `techdebt` | "tech debt" | Scan for duplicates, dead exports, unused deps, stale TODOs. |
+| `fix` | "fix ci/tests" | Auto-fix from error output. Paste CI logs, test failures, Docker errors. |
+| `learn` | "learn this" | Auto-update CLAUDE.md with project learnings. |
+| `deepinit` | "deepinit" | Generate hierarchical AGENTS.md documentation for entire codebase. |
+| `note` | "forge note" | Persistent notepad: priority (permanent), working (7-day), manual (permanent). |
+| `learner` | "save this insight" | Extract reusable skills from debugging. Must be non-Googleable and actionable. |
+| `trace` | "forge trace" | Visualize execution timeline and aggregate stats. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:worktree` | "worktree", "parallel sessions" | Git worktree manager. Create isolated working copies for parallel feature development without branch switching. |
-| `/claude-forge:techdebt` | "tech debt", "find duplicates" | Scan for duplicated code, dead exports, unused dependencies, stale TODOs, inconsistent patterns. Prioritized remediation list. |
-| `/claude-forge:fix` | "fix ci/tests/the fail", "go fix" | Auto-fix from error output. Paste CI logs, test failures, or Docker build errors. Parses, diagnoses, and fixes. |
-| `/claude-forge:learn` | "learn this", "remember this", "update claude.md" | Auto-update CLAUDE.md with project learnings. Captures patterns, conventions, and decisions. |
-| `/claude-forge:deepinit` | "deepinit", "generate agents.md", "init codebase" | Generate hierarchical AGENTS.md documentation. Scans entire codebase, maps architecture, documents each directory with parent references. |
-| `/claude-forge:note` | "forge note" | Persistent notepad across sessions. 3 sections: priority (permanent), working (7-day auto-prune), manual (permanent). Survives context compaction. |
-| `/claude-forge:learner` | "save this insight", "don't make that mistake" | Extract reusable skills from debugging insights. Quality gates: must be non-Googleable, context-specific, actionable, and hard-won. |
-| `/claude-forge:trace` | "forge trace", "agent timeline" | Visualize session execution. Timeline view (chronological events) and summary view (aggregate stats). Filter: `--hooks`, `--skills`, `--agents`, `--modes`. |
+</details>
 
-### Specialist Agents
+<details>
+<summary><b>Specialist Agents & Configuration</b></summary>
 
-Domain-specific expert routing.
+**Specialist Agents:**
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:frontend-ui-ux` | "ui/ux" | UI/UX design work. Routes to Gemini CLI (1M context for component libraries) or designer agent. WCAG 2.1 AA compliance. Responsive, accessible, performant. |
-| `/claude-forge:git-master` | "git-master" | Git expert. Atomic commits, interactive rebasing, history cleanup. Detects existing commit style (conventional, angular, gitmoji). Never force-pushes without confirmation. |
+| Skill | Trigger | Description |
+|:------|:--------|:------------|
+| `frontend-ui-ux` | "ui/ux" | Routes to Gemini (1M context) or designer agent. WCAG 2.1 AA. |
+| `git-master` | "git-master" | Atomic commits, rebasing, history cleanup. Detects commit style. |
 
-### Configuration
+**Configuration:**
 
-Setup and diagnostics.
+| Skill | Description |
+|:------|:------------|
+| `setup` | Interactive setup wizard &mdash; detect CLIs, configure models, validate |
+| `set-codex-model` | Configure Codex CLI model |
+| `set-gemini-model` | Configure Gemini CLI model |
+| `enable-codex` | Enable Codex after installing CLI |
+| `enable-gemini` | Enable Gemini after installing CLI |
+| `hud` | Configure HUD statusline |
+| `doctor` | 7 diagnostic checks with auto-fix |
+| `help` | Full feature guide |
+| `cancel` | Cancel any active mode. `--force` clears all state. |
 
-| Skill | Trigger | What It Does |
-|-------|---------|-------------|
-| `/claude-forge:setup` | "setup forge", "configure forge" | Interactive setup wizard. Detects installed CLIs, configures models, sets up HUD, validates everything. |
-| `/claude-forge:set-codex-model` | "set codex model" | Configure which model Codex CLI uses. |
-| `/claude-forge:set-gemini-model` | "set gemini model" | Configure which model Gemini CLI uses. |
-| `/claude-forge:enable-codex` | "enable codex", "installed codex", "activate codex" | Enable Codex delegation after installing the CLI. |
-| `/claude-forge:enable-gemini` | "enable gemini", "installed gemini", "activate gemini" | Enable Gemini delegation after installing the CLI. |
-| `/claude-forge:hud` | "forge hud", "setup hud" | Configure the HUD statusline display. |
-| `/claude-forge:doctor` | "forge doctor" | Run 7 diagnostic checks: plugin registration, MCP servers, CLI paths, hooks, skills, config, state directory. Auto-fixes common issues. |
-| `/claude-forge:help` | "forge help", "what can forge do" | Full feature guide with all skills, examples, and tips. |
-| `/claude-forge:cancel` | "cancel", "stop forge/autopilot/ralph/ultrawork" | Cancel any active mode. Detects which mode is running, cleans up in dependency order. `--force` clears all state. |
+</details>
 
 ---
 
 ## Intelligent Features
 
-These features work automatically in the background. No skill invocation needed.
+These work automatically in the background &mdash; no skill invocation needed.
 
-### Magic Keywords
+<details open>
+<summary><b>Magic Keywords</b></summary>
 
-Say these naturally in any prompt to activate enhanced behavior:
+Say these naturally in any prompt:
 
 | Keyword | Aliases | Effect |
-|---------|---------|--------|
-| **ultrawork** | `ulw` | Maximum parallelism. Decomposes task, assigns agents, runs in parallel. No scope reduction. |
-| **search** | `deepsearch` | Exhaustive search mode. Multiple strategies, never stops at first result. |
-| **analyze** | `investigate` | Deep context gathering before any action. Read everything relevant first. |
-| **ultrathink** | `think hard` | Extended reasoning. Quality over speed. More thorough analysis. |
+|:--------|:--------|:-------|
+| **ultrawork** | `ulw` | Maximum parallelism. Decomposes and runs agents in parallel. |
+| **search** | `deepsearch`, `search the codebase` | Exhaustive search. Multiple strategies, never stops at first result. |
+| **analyze** | `investigate`, `diagnose` | Deep context gathering before any action. |
+| **ultrathink** | `think hard`, `step by step` | Extended reasoning. Quality over speed. |
 
-Magic keywords inject behavioral prompts into the conversation context. They compose - you can say "ultrawork this analysis" to get both parallel execution and deep investigation.
+Keywords compose &mdash; "ultrawork this analysis" activates both modes.
 
-### Automatic Task Routing
+</details>
 
-Every prompt longer than 40 characters is automatically classified:
+<details>
+<summary><b>Automatic Task Routing</b></summary>
 
-**Backend signals** (routes to Codex):
-`api`, `endpoint`, `server`, `database`, `sql`, `migration`, `cli`, `script`, `pipeline`, `docker`, `auth`, `middleware`, `cache`, `redis`, `queue`, `worker`, `webhook`, `microservice`
+Prompts are classified by signal words:
 
-**Frontend signals** (routes to Gemini):
-`component`, `ui`, `ux`, `css`, `style`, `layout`, `react`, `vue`, `svelte`, `html`, `design`, `theme`, `animation`, `accessibility`, `tailwind`, `visual`, `mobile`
+**Backend** (routes to Codex): `api` `endpoint` `server` `database` `sql` `migration` `cli` `script` `pipeline` `docker` `auth` `middleware` `cache` `redis` `queue` `worker` `webhook` `microservice`
 
-When signals are detected, a routing hint is injected. Claude decides whether to delegate based on the hint and task complexity.
+**Frontend** (routes to Gemini): `component` `ui` `ux` `css` `style` `layout` `react` `vue` `svelte` `html` `design` `theme` `animation` `accessibility` `tailwind` `visual` `mobile`
 
-### Complexity Scoring
+</details>
 
-Tasks are automatically scored on a 0-15+ scale for model routing:
+<details>
+<summary><b>Complexity Scoring</b></summary>
+
+Tasks are scored 0-15+ for model routing:
 
 | Signal | Weight | Examples |
-|--------|--------|---------|
+|:-------|:------:|:--------|
 | Architecture decisions | +3 | "design the system", "architect" |
 | Debugging | +2 | "fix the bug", "why is this failing" |
 | Risk/security | +2 | "security audit", "vulnerability" |
 | Refactoring | +2 | "refactor", "restructure" |
-| Multiple subtasks | +3 | "and also", "additionally", numbered lists |
-| Cross-file changes | +2 | "across all files", "everywhere" |
-| System-wide impact | +3 | "entire codebase", "global change" |
+| Multiple subtasks | +3 | "and also", numbered lists |
+| Cross-file changes | +2 | "across all files" |
+| System-wide impact | +3 | "entire codebase" |
 
-**Routing tiers:**
-- Score 0-3: **Haiku** - quick lookups, simple fixes
-- Score 4-8: **Sonnet** - standard implementation, debugging
-- Score 8+: **Opus** - architecture, deep analysis, complex refactors
+**Routing:** 0-3 &rarr; Haiku &bull; 4-8 &rarr; Sonnet &bull; 8+ &rarr; Opus
 
-### Task Decomposition
+</details>
 
-The `/claude-forge:parallel` skill uses intelligent decomposition:
+<details>
+<summary><b>Task Decomposition</b></summary>
 
-1. **Type detection** - fullstack, refactoring, bug-fix, feature, testing, docs, infra
-2. **Area extraction** - identifies distinct work areas (backend, frontend, database, etc.)
-3. **Component mapping** - maps files to components with ownership
-4. **Dependency analysis** - topological sort for execution ordering
-5. **Wave generation** - groups independent components into parallel execution waves
+The `parallel` skill decomposes tasks into execution waves:
 
-Example: "Build a user dashboard with API endpoints and database models"
-- Wave 1: Database models + API endpoints (parallel, no dependencies)
-- Wave 2: Frontend dashboard (depends on API being ready)
+1. **Type detection** &mdash; fullstack, refactoring, bug-fix, feature, testing, docs, infra
+2. **Area extraction** &mdash; backend, frontend, database, auth, testing, etc.
+3. **File ownership** &mdash; maps files to components, prevents conflicts
+4. **Dependency analysis** &mdash; topological sort for ordering
+5. **Wave generation** &mdash; groups independent work for parallel execution
 
-### Continuation Enforcement
+Example: *"Build a user dashboard with API endpoints and database models"*
+- **Wave 1:** Database models + API endpoints (parallel)
+- **Wave 2:** Frontend dashboard (depends on API)
 
-A `Stop` hook prevents premature exit during execution modes:
+</details>
 
-- Detects incomplete tasks, pending work, and unverified claims
-- Injects continuation reminders when Claude tries to stop early
-- Recognizes completion signals (all tests pass, verification complete)
+<details>
+<summary><b>Continuation & Context Monitoring</b></summary>
+
+**Continuation Enforcement** (Stop hook):
+- Prevents premature exit during execution modes
+- Detects incomplete tasks and unverified claims
 - Allows user-initiated stops and context limit stops
-- Active only during execution modes (autopilot, ralph, ultrawork, etc.)
 
-### Context Monitoring
+**Context Monitoring** (PostToolUse hook):
+- Tracks token usage after every tool call
+- Warning at 75% &bull; Critical alert at 90%
+- Debounced (30s cooldown) &bull; Max 5 warnings per session
 
-A `PostToolUse` hook tracks context window consumption:
-
-- Estimates token usage after every tool call
-- **Warning** at 75% context usage - suggests summarizing or completing current task
-- **Critical alert** at 90% - recommends wrapping up immediately
-- Debounced (30s cooldown) to avoid spam
-- Max 5 warnings per session
+</details>
 
 ---
 
 ## HUD System
 
-claude-forge includes an optional Heads-Up Display showing live session stats:
+Live session stats in your statusline:
 
 ```
-forge | codex:ready gemini:ready | jobs:2 | ctx:45% | cost:$0.12
+  branch:main | model:Claude Opus 4
+  [FORGE] | 5h:[########]42% wk:[####----]28% | cx:✓ gm:✓ | run:cx:1 done:3 | session:12m | 🟢 | ~$0.1842 | 46.1k | ctx:[######----]62%
 ```
 
-Features:
-- CLI availability status
-- Active job count
-- Context window usage bar
-- Estimated session cost
-- Live rate limit display (via Anthropic Usage API)
+Features: CLI status &bull; Active jobs &bull; Rate limits (5h + weekly) &bull; Context bar &bull; Session cost &bull; Token count
 
 Configure with `/claude-forge:hud`.
 
@@ -417,312 +338,312 @@ Configure with `/claude-forge:hud`.
 
 ### MCP Servers
 
-Two MCP servers provide the delegation bridge:
+Two servers provide the delegation bridge:
 
-**Codex Server** (`servers/codex-server.mjs`)
-- Tools: `codex_exec`, `codex_status`, `codex_cancel`, `codex_list`
-- Spawns `codex exec --yolo` with prompt via stdin
-- In-memory job store with async polling (25s long-poll, 500ms interval)
-- Anti-loop preamble injected into every prompt
-- Conditional tool registration: returns empty tools if Codex CLI not found (saves tokens)
+| Server | Tools | CLI | Pattern |
+|:-------|:------|:----|:--------|
+| **forge-codex** | `codex_exec` `codex_status` `codex_cancel` `codex_list` | Codex CLI | `spawn("codex", ["exec", "--yolo"])` via stdin |
+| **forge-gemini** | `gemini_exec` `gemini_status` `gemini_cancel` `gemini_list` | Gemini CLI | `spawn("gemini", ["-y"])` via stdin |
 
-**Gemini Server** (`servers/gemini-server.mjs`)
-- Tools: `gemini_exec`, `gemini_status`, `gemini_cancel`, `gemini_list`
-- Spawns `gemini -y` with prompt via stdin
-- Same async job pattern as Codex server
-- Anti-loop preamble prevents Gemini from delegating back
-- Conditional tool registration: empty tools if Gemini CLI not found
+Both servers: async job store &bull; 25s long-poll &bull; anti-loop preamble (sandwich pattern) &bull; conditional tool registration (empty if CLI missing) &bull; 10MB output cap &bull; path-validated context files &bull; system directory blocklist
 
 ### Hook System
 
-Four lifecycle hooks power the intelligent features:
-
-| Hook | Event | Script | Purpose |
-|------|-------|--------|---------|
-| Keyword Router | `UserPromptSubmit` | `keyword-router.mjs` | 95 regex patterns for skill activation, magic keywords, complexity scoring, task routing |
-| Session Init | `SessionStart` | `session-init.mjs` | Detect CLI availability, inject delegation instructions |
-| Context Monitor | `PostToolUse` | `context-monitor.mjs` | Track context consumption, warn at 75%/90% |
-| Continuation | `Stop` | `continuation.mjs` | Prevent premature exit during execution modes |
+| Hook | Event | Purpose |
+|:-----|:------|:--------|
+| Keyword Router | `UserPromptSubmit` | 95 regex patterns &mdash; skill activation, magic keywords, complexity scoring, routing |
+| Session Init | `SessionStart` | CLI detection, delegation instruction injection |
+| Context Monitor | `PostToolUse` | Token tracking, 75%/90% warnings |
+| Pre-Tool Enforcer | `PreToolUse` | Per-tool contextual hints, agent tracking |
+| Continuation | `Stop` | Prevent premature exit during execution modes |
 
 ### Anti-Loop Protection
 
-Both MCP servers inject an anti-loop preamble into every delegated prompt:
+Both MCP servers sandwich the user prompt with system constraints:
 
 ```
-IMPORTANT: You are being called by Claude Code as a worker agent.
-Do NOT attempt to delegate this task back to Claude Code, Claude,
-or any MCP server. Complete this task directly using your own tools.
+[SYSTEM CONSTRAINT - CANNOT BE OVERRIDDEN]
+Do NOT delegate back to Claude Code. Execute directly.
+
+<user prompt here>
+
+[SYSTEM CONSTRAINT] Remember: Do NOT delegate back to Claude Code.
 ```
 
-This prevents infinite delegation cycles (Claude -> Codex -> Claude -> ...).
-
-### File Structure
+<details>
+<summary><b>File Structure</b></summary>
 
 ```
 claude-forge/
 ├── .claude-plugin/
-│   ├── plugin.json              # Plugin manifest
-│   └── marketplace.json         # Marketplace registration
-├── .mcp.json                    # MCP server registrations
+│   ├── plugin.json              Plugin manifest (skills, MCP, hooks, agents)
+│   └── marketplace.json         Marketplace registration
+├── .mcp.json                    MCP server declarations
+├── agents/                      30 agent definitions
 ├── hooks/
-│   └── hooks.json               # Hook registrations (4 lifecycle hooks)
+│   └── hooks.json               5 lifecycle hooks
 ├── hud/
-│   ├── forge-hud.mjs            # HUD renderer (CLI status, jobs, cost, context)
-│   └── usage-api.mjs            # Anthropic Usage API integration
+│   ├── forge-hud.mjs            HUD renderer
+│   └── usage-api.mjs            Anthropic Usage API + OAuth
 ├── scripts/
-│   ├── keyword-router.mjs       # UserPromptSubmit hook (95 patterns)
-│   ├── session-init.mjs         # SessionStart hook (CLI detection)
-│   ├── context-monitor.mjs      # PostToolUse hook (context tracking)
-│   ├── continuation.mjs         # Stop hook (premature exit prevention)
+│   ├── keyword-router.mjs       UserPromptSubmit (95 patterns)
+│   ├── session-init.mjs         SessionStart (CLI detection)
+│   ├── context-monitor.mjs      PostToolUse (context tracking)
+│   ├── pre-tool-enforcer.mjs    PreToolUse (per-tool hints)
+│   ├── continuation.mjs         Stop (exit prevention)
 │   └── lib/
-│       ├── stdin.mjs            # Timeout-protected stdin reader
-│       ├── routing.mjs          # Backend/frontend task classification
-│       ├── magic-keywords.mjs   # Magic keyword detection and injection
-│       ├── complexity.mjs       # Complexity scoring engine
-│       ├── decomposer.mjs       # Task decomposition with file ownership
-│       └── token-tracker.mjs    # JSONL token tracking and cost estimation
+│       ├── stdin.mjs            Timeout-protected stdin reader
+│       ├── routing.mjs          Backend/frontend classification
+│       ├── magic-keywords.mjs   Keyword detection + injection
+│       ├── complexity.mjs       Complexity scoring engine
+│       ├── decomposer.mjs       Task decomposition
+│       └── token-tracker.mjs    Token tracking + cost estimation
 ├── servers/
-│   ├── codex-server.mjs         # Codex CLI MCP server (4 tools)
-│   └── gemini-server.mjs        # Gemini CLI MCP server (4 tools)
-├── skills/                      # 42 skill definitions
-│   ├── autopilot/SKILL.md       # Full autonomous pipeline
-│   ├── ralph/SKILL.md           # Persistence loop
-│   ├── ultrawork/SKILL.md       # Parallel execution
-│   ├── ecomode/SKILL.md         # Token-efficient routing
-│   ├── ultraqa/SKILL.md         # QA cycling
-│   ├── forge/SKILL.md           # Auto-route delegation
-│   ├── review/SKILL.md          # Parallel cross-review
-│   ├── ... (35 more)
-│   └── cancel/SKILL.md          # Mode cancellation
+│   ├── codex-server.mjs         Codex CLI MCP server (4 tools)
+│   └── gemini-server.mjs        Gemini CLI MCP server (4 tools)
+├── skills/                      42 skill definitions
 ├── templates/
-│   └── CLAUDE.md                # Injected delegation instructions
+│   └── CLAUDE.md                Injected delegation instructions
 ├── package.json
-├── LICENSE
+├── LICENSE                      GPL-3.0
 └── README.md
 ```
+
+</details>
 
 ---
 
 ## Configuration
-
-### CLI Model Selection
 
 ```
 /claude-forge:set-codex-model    # Choose Codex model (gpt-5.3-codex, etc.)
 /claude-forge:set-gemini-model   # Choose Gemini model (gemini-3-pro, etc.)
 ```
 
-### State Directory
-
-claude-forge stores execution mode state in `.forge/` at the git worktree root:
+State lives in `.forge/` at the git worktree root:
 
 ```
 .forge/
-├── autopilot-state.json     # Autopilot progress (resumable)
-├── ralph-state.json         # Ralph loop iteration count
-├── ultrawork-state.json     # Ultrawork task assignments
-└── token-tracking.jsonl     # Token usage log
+├── autopilot-state.json         Autopilot progress (resumable)
+├── ralph-state.json             Ralph loop iteration count
+├── ultrawork-state.json         Ultrawork task assignments
+└── .context-monitor-state.json  Context window tracking
 ```
 
-Add `.forge/` to your `.gitignore` (already included in the plugin's `.gitignore`).
+Add `.forge/` to your `.gitignore`.
 
 ---
 
 ## Examples
 
-### Autonomous Feature Development
+<details open>
+<summary><b>Autonomous Feature Development</b></summary>
 
 ```
 autopilot: Build a user authentication system with JWT tokens,
 password hashing, rate limiting, and email verification
 ```
 
-Claude enters autopilot mode:
-1. **Expansion** - Analyzes requirements, asks clarifying questions
-2. **Planning** - Creates detailed implementation plan with file ownership
-3. **Execution** - Routes backend to Codex, frontend to Gemini, runs in parallel
-4. **QA** - Runs tests, fixes failures, iterates until passing
-5. **Validation** - Verifier agent confirms all acceptance criteria met
+1. **Expansion** &mdash; Analyzes requirements, asks clarifying questions
+2. **Planning** &mdash; Detailed plan with file ownership
+3. **Execution** &mdash; Backend to Codex, frontend to Gemini, parallel
+4. **QA** &mdash; Runs tests, fixes failures, iterates
+5. **Validation** &mdash; Verifier confirms all criteria met
 
-### Parallel Cross-Review
+</details>
+
+<details>
+<summary><b>Parallel Cross-Review</b></summary>
 
 ```
 forge review the authentication PR
 ```
 
 Spawns two reviews simultaneously:
-- **Codex** reviews: security vulnerabilities, logic bugs, performance, error handling
-- **Gemini** reviews: design patterns, maintainability, naming, documentation, UX
+- **Codex:** security vulnerabilities, logic bugs, performance, error handling
+- **Gemini:** design patterns, maintainability, naming, documentation, UX
 
-Synthesizes into unified report with deduplicated findings, severity ratings, and source attribution.
+Unified report with deduplicated findings and severity ratings.
 
-### Maximum Throughput Refactor
+</details>
+
+<details>
+<summary><b>Maximum Throughput Refactor</b></summary>
 
 ```
 ultrawork: Migrate the entire codebase from CommonJS to ESM
 ```
 
-1. Analyzes all files, identifies dependency graph
+1. Analyzes all files, builds dependency graph
 2. Decomposes into independent work units with file ownership
-3. Assigns parallel agents (some to Codex, some to built-in agents)
+3. Assigns parallel agents (Codex + built-in agents)
 4. Each agent works on its files without conflicts
 5. Verifies all imports resolve and tests pass
 
-### Quick Backend Delegation
+</details>
+
+<details>
+<summary><b>Quick Backend Delegation</b></summary>
 
 ```
 use codex: Add pagination to the /api/users endpoint with
 cursor-based pagination, filtering by role, and sorting
 ```
 
-Directly delegates to Codex CLI. Claude monitors progress, reports when done.
+Directly delegates to Codex CLI. Claude monitors and reports.
 
-### Token-Efficient Development
+</details>
+
+<details>
+<summary><b>Token-Efficient Development</b></summary>
 
 ```
 ecomode: Add form validation to the signup page
 ```
 
-Routes to Haiku for the classification, Sonnet for the implementation, skips Opus entirely. Same quality, ~3x cheaper.
+Haiku classifies, Sonnet implements, Opus skipped. Same quality, ~3x cheaper.
+
+</details>
 
 ---
 
 ## Comparison
 
-### claude-forge vs Using Claude Code Alone
+<details>
+<summary><b>claude-forge vs Claude Code Alone</b></summary>
 
 | Feature | Claude Code | + claude-forge |
-|---------|-------------|---------------|
+|:--------|:------------|:---------------|
 | AI models | Claude only | Claude + GPT (Codex) + Gemini |
 | Parallel execution | Sequential | Up to 5 parallel agents |
 | Context window | 200K | 200K + 128K (Codex) + 1M (Gemini) |
 | Autonomous modes | Manual | Autopilot, Ralph, Ultrawork |
 | Code review | Single perspective | Multi-model cross-review |
 | Task routing | Manual | Automatic classification |
-| Cost optimization | One model tier | Complexity-based model routing |
+| Cost optimization | One model tier | Complexity-based routing |
 
-### claude-forge vs oh-my-claudecode (OMC)
+</details>
+
+<details>
+<summary><b>claude-forge vs oh-my-claudecode (OMC)</b></summary>
 
 | Feature | OMC | claude-forge |
-|---------|-----|-------------|
+|:--------|:----|:-------------|
 | **Focus** | Claude-native orchestration | Multi-CLI delegation |
-| **External CLIs** | Optional (Codex/Gemini MCP) | Core feature (Codex + Gemini) |
-| **MCP Servers** | 3 (tools, codex, gemini) | 2 (codex, gemini) |
+| **External CLIs** | Optional MCP | Core feature |
 | **Skills** | 37 | 42 |
 | **Build system** | TypeScript + esbuild | Pure ESM, no build step |
-| **Magic keywords** | Yes | Yes |
-| **Execution modes** | Autopilot, Ralph, Ultrawork, Ecomode, UltraQA | Same |
-| **HUD** | Yes | Yes |
 | **LSP/AST tools** | Yes (via MCP) | No |
-| **State management** | Session-aware with SQLite | File-based JSON |
-| **Installation** | Plugin marketplace | Plugin marketplace |
+| **State** | Session-aware with SQLite | File-based JSON |
 
-**When to use claude-forge:** You want multi-CLI delegation as the primary workflow. Backend goes to Codex, frontend goes to Gemini, Claude orchestrates.
+**Use claude-forge** when multi-CLI delegation is primary. **Use OMC** when Claude-native orchestration with LSP/AST tools matters.
 
-**When to use OMC:** You want Claude-native orchestration with optional CLI delegation. LSP and AST tools are important to you.
+</details>
 
 ---
 
 ## Troubleshooting
 
-### "Codex CLI not found"
+<details>
+<summary><b>"Codex CLI not found"</b></summary>
 
 ```bash
-# Install Codex
 npm install -g @openai/codex
-
-# Set your OpenAI API key
 export OPENAI_API_KEY=sk-...
-
-# Tell forge it's available
 /claude-forge:enable-codex
 ```
 
-### "Gemini CLI not found"
+</details>
+
+<details>
+<summary><b>"Gemini CLI not found"</b></summary>
 
 ```bash
-# Install Gemini
 npm install -g @google/gemini-cli
-
-# Authenticate
 gemini auth
-
-# Tell forge it's available
 /claude-forge:enable-gemini
 ```
 
-### Skills not appearing
+</details>
 
-```
-/claude-forge:doctor
-```
+<details>
+<summary><b>Skills not appearing</b></summary>
 
-This runs diagnostics on plugin registration, skill discovery, MCP servers, and hooks.
+Run `/claude-forge:doctor` &mdash; checks plugin registration, skill discovery, MCP servers, and hooks.
 
-### MCP server not responding
+</details>
+
+<details>
+<summary><b>MCP server not responding</b></summary>
 
 ```bash
-# Test manually
 node /path/to/claude-forge/servers/codex-server.mjs
 # Should start and wait for MCP messages on stdin
 ```
 
-### Cancel a stuck mode
+</details>
+
+<details>
+<summary><b>Cancel a stuck mode</b></summary>
 
 ```
 /claude-forge:cancel --force
 ```
 
-This clears all state files regardless of what's active.
+Clears all state files regardless of what's active.
 
-### Context running out
+</details>
 
-If you see context warnings during a large operation:
+<details>
+<summary><b>Context running out</b></summary>
+
 1. Complete the current sub-task
-2. Start a new session
-3. Run `/claude-forge:note` to save progress before the session ends
+2. Run `/claude-forge:note` to save progress
+3. Start a new session
+
+</details>
 
 ---
 
 ## Contributing
 
-Contributions welcome. The codebase is pure ESM JavaScript with no build step.
+Contributions welcome. Pure ESM JavaScript, no build step.
 
-### Adding a Skill
+<details>
+<summary><b>Adding a Skill</b></summary>
 
 1. Create `skills/your-skill/SKILL.md`
 2. Add YAML frontmatter with `name` and `description`
-3. Write the skill using `<Purpose>`, `<Use_When>`, `<Steps>` sections
+3. Write using `<Purpose>`, `<Use_When>`, `<Steps>` sections
 4. Add trigger patterns to `scripts/keyword-router.mjs`
-5. Update `templates/CLAUDE.md` with the new skill
-
-### Skill Format
+5. Update `templates/CLAUDE.md`
 
 ```markdown
 ---
 name: your-skill
-description: One-line description of what this skill does
+description: One-line description
 ---
 
 <Purpose>
-What this skill does and why it exists.
+What this skill does and why.
 </Purpose>
 
 <Use_When>
 - User says "trigger phrase"
-- When some condition is met
 </Use_When>
 
 <Steps>
 1. First step
 2. Second step
-3. ...
 </Steps>
 ```
 
-### MCP Server Development
+</details>
 
-Both servers use `@modelcontextprotocol/sdk` with StdioServerTransport. The pattern:
+<details>
+<summary><b>MCP Server Development</b></summary>
+
+Both servers use `@modelcontextprotocol/sdk` with StdioServerTransport:
 
 1. Define tools with JSON Schema parameters
 2. Handle `call_tool` requests
@@ -730,18 +651,20 @@ Both servers use `@modelcontextprotocol/sdk` with StdioServerTransport. The patt
 4. Store job in memory Map
 5. Support async polling via `*_status` tool
 
+</details>
+
 ---
 
 ## License
 
-[GPL-3.0](LICENSE) - Free software. Share alike.
+[GPL-3.0](LICENSE) &mdash; Free software. Share alike.
 
 ---
 
-<p align="center">
-<b>claude-forge</b> - Because one AI model is never enough.
-<br>
-<a href="https://github.com/staticpayload/claude-forge">GitHub</a> ·
-<a href="https://github.com/staticpayload/claude-forge/issues">Issues</a> ·
-<a href="https://github.com/staticpayload/claude-forge/discussions">Discussions</a>
-</p>
+<div align="center">
+
+**claude-forge** &mdash; Because one AI model is never enough.
+
+[GitHub](https://github.com/staticpayload/claude-forge) &bull; [Issues](https://github.com/staticpayload/claude-forge/issues) &bull; [Discussions](https://github.com/staticpayload/claude-forge/discussions)
+
+</div>

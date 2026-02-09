@@ -2,3 +2,9 @@ node_modules/
 .DS_Store
 *.log
 .omc/
+.forge/
+*.swp
+*.swo
+*~
+.env
+.env.local

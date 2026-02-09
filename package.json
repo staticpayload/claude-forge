@@ -1,13 +1,33 @@
 {
   "name": "claude-forge",
   "version": "1.0.0",
-  "description": "Bidirectional delegation between Claude Code, Codex CLI, and Gemini CLI",
+  "description": "Multi-CLI delegation and orchestration for Claude Code - route backend to Codex, frontend to Gemini",
   "type": "module",
   "license": "MIT",
+  "author": {
+    "name": "staticpayload",
+    "url": "https://github.com/staticpayload"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/staticpayload/claude-forge"
   },
+  "homepage": "https://github.com/staticpayload/claude-forge",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    ".claude-plugin",
+    ".mcp.json",
+    "hooks",
+    "hud",
+    "scripts",
+    "servers",
+    "skills",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.2"
   }

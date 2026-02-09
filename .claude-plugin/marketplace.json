@@ -1,0 +1,33 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-forge",
+  "description": "Multi-CLI delegation and orchestration for Claude Code - route backend to Codex, frontend to Gemini, with 42 skills and intelligent auto-routing",
+  "owner": {
+    "name": "staticpayload",
+    "url": "https://github.com/staticpayload"
+  },
+  "plugins": [
+    {
+      "name": "claude-forge",
+      "description": "Multi-CLI delegation and orchestration - 42 skills, 2 MCP servers, magic keywords, complexity scoring, HUD with live rate limits",
+      "version": "1.0.0",
+      "author": {
+        "name": "staticpayload",
+        "url": "https://github.com/staticpayload"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/staticpayload/claude-forge",
+      "tags": [
+        "multi-cli",
+        "delegation",
+        "codex",
+        "gemini",
+        "orchestration",
+        "parallel",
+        "autopilot",
+        "ultrawork"
+      ]
+    }
+  ]
+}

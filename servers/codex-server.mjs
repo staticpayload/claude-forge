@@ -7,8 +7,17 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
+import { join } from "node:path";
 
 const HOME = homedir();
+const CONFIG_PATH = join(HOME, ".claude-forge", "config.json");
+
+function loadConfig() {
+  try {
+    if (existsSync(CONFIG_PATH)) return JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  } catch { /* ignore */ }
+  return {};
+}
 const MAX_JOBS = 50;
 const DEBUG = process.env.FORGE_CODEX_DEBUG === "true";
 const log = (...a) => DEBUG && console.error("[forge:codex]", ...a);
@@ -18,9 +27,11 @@ function findCli() {
   for (const p of [process.env.CODEX_CLI_NAME, "/usr/local/bin/codex", "/opt/homebrew/bin/codex"]) {
     if (p && existsSync(p)) return p;
   }
-  return "codex";
+  return null; // not found — tools will be hidden to save tokens
 }
 const CLI = findCli();
+const CLI_AVAILABLE = CLI !== null;
+const CLI_PATH = CLI || "codex"; // fallback for spawn if user installs later
 
 // --- Anti-loop preamble ---
 const NO_LOOP =
@@ -61,11 +72,11 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
+  tools: CLI_AVAILABLE ? [
     {
       name: "codex_exec",
       description:
-        "Delegate backend work to Codex CLI (OpenAI gpt-5.3-codex). Returns job ID instantly. " +
+        "Delegate backend work to Codex CLI. Returns job ID instantly. " +
         "AUTO-DELEGATE: API endpoints, data pipelines, scripts, CLI tools, infra, " +
         "backend services, database work, server-side logic, build tooling. " +
         "Poll codex_status until done. Cancel with codex_cancel.",
@@ -74,7 +85,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           prompt: { type: "string", description: "Task for Codex. Include file paths and verification steps." },
           workFolder: { type: "string", description: "Absolute path to project root. Defaults to $HOME." },
-          model: { type: "string", description: "Model override. Default: gpt-5.3-codex. Alt: o3, o4-mini." },
+          model: { type: "string", description: "Model override. Uses CLI default if not set. User can configure via /claude-forge:set-codex-model." },
           sandbox: {
             type: "string",
             enum: ["yolo", "full-auto", "workspace-write", "read-only"],
@@ -119,11 +130,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
-  ],
+  ] : [],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  if (!CLI_AVAILABLE) return reply("Codex CLI not installed. Install it or use /claude-forge:backend-agent instead.", true);
 
   switch (name) {
     case "codex_exec": {
@@ -132,7 +144,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const workFolder = (args?.workFolder && typeof args.workFolder === "string") ? args.workFolder : HOME;
       const sandbox = args?.sandbox || "yolo";
-      const model = args?.model || null;
+      const config = loadConfig();
+      const model = args?.model || config.codexModel || null;
       const contextPrefix = readContextFiles(args?.context_files);
 
       const jobId = randomUUID().slice(0, 8);
@@ -149,7 +162,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       cliArgs.push("-"); // read from stdin
 
       try {
-        const proc = spawn(CLI, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
+        const proc = spawn(CLI_PATH, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
         job._proc = proc;
         proc.stdin.write(NO_LOOP + contextPrefix + prompt);
         proc.stdin.end();

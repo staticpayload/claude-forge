@@ -5,9 +5,10 @@ description: Auto-route tasks to the best CLI (Codex for backend, Gemini for fro
 
 <Purpose>
 Analyze the user's request and delegate to the optimal CLI agent:
-- Codex (gpt-5.3-codex) for backend, API, data, infra, scripts
-- Gemini (gemini-2.5-pro, 1M context) for frontend, UI/UX, design, docs
+- Codex CLI for backend, API, data, infra, scripts
+- Gemini CLI for frontend, UI/UX, design, docs
 For ambiguous tasks, ask the user or run both in parallel.
+If neither CLI is available, fall back to built-in agent skills.
 </Purpose>
 
 <Use_When>
@@ -28,6 +29,7 @@ For ambiguous tasks, ask the user or run both in parallel.
 2. **Route** based on classification:
    - Clear backend -> Use ToolSearch to discover codex tools, then call `mcp__codex__codex_exec` with the task prompt and workFolder set to the current project
    - Clear frontend -> Use ToolSearch to discover gemini tools, then call `mcp__gemini__gemini_exec` with the task prompt and workFolder
+   - CLI unavailable -> Use `/claude-forge:backend-agent` or `/claude-forge:frontend-agent` as fallback
    - Ambiguous -> Ask user: "Should I route this to Codex (backend) or Gemini (frontend/design)?"
 
 3. **Monitor**: Poll `codex_status` or `gemini_status` every 25s until completed or failed

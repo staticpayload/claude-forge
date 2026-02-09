@@ -1,13 +1,24 @@
 {
   "name": "claude-forge",
   "version": "1.0.0",
-  "description": "Bidirectional delegation between Claude Code, Codex CLI, and Gemini CLI",
+  "description": "Multi-CLI delegation and orchestration for Claude Code",
   "author": {
-    "name": "staticpayload"
+    "name": "staticpayload",
+    "url": "https://github.com/staticpayload"
   },
   "repository": "https://github.com/staticpayload/claude-forge",
+  "homepage": "https://github.com/staticpayload/claude-forge",
   "license": "MIT",
-  "keywords": ["claude-code", "plugin", "delegation", "codex", "gemini", "multi-cli"],
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "delegation",
+    "codex",
+    "gemini",
+    "multi-cli",
+    "orchestration",
+    "autopilot"
+  ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"
 }

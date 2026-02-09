@@ -7,8 +7,17 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
+import { join } from "node:path";
 
 const HOME = homedir();
+const CONFIG_PATH = join(HOME, ".claude-forge", "config.json");
+
+function loadConfig() {
+  try {
+    if (existsSync(CONFIG_PATH)) return JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  } catch { /* ignore */ }
+  return {};
+}
 const MAX_JOBS = 50;
 const DEBUG = process.env.FORGE_GEMINI_DEBUG === "true";
 const log = (...a) => DEBUG && console.error("[forge:gemini]", ...a);
@@ -18,9 +27,11 @@ function findCli() {
   for (const p of [process.env.GEMINI_CLI_NAME, "/opt/homebrew/bin/gemini", "/usr/local/bin/gemini"]) {
     if (p && existsSync(p)) return p;
   }
-  return "gemini";
+  return null; // not found — tools will be hidden to save tokens
 }
 const CLI = findCli();
+const CLI_AVAILABLE = CLI !== null;
+const CLI_PATH = CLI || "gemini"; // fallback for spawn if user installs later
 
 // --- Anti-loop preamble ---
 const NO_LOOP =
@@ -61,11 +72,11 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
-  tools: [
+  tools: CLI_AVAILABLE ? [
     {
       name: "gemini_exec",
       description:
-        "Delegate frontend/design work to Gemini CLI (Google gemini-2.5-pro, 1M context). Returns job ID instantly. " +
+        "Delegate frontend/design work to Gemini CLI. Returns job ID instantly. " +
         "AUTO-DELEGATE: UI components, CSS/styling, React/Vue/Svelte, layouts, " +
         "design systems, docs, visual analysis, large-context tasks. " +
         "Poll gemini_status until done. Cancel with gemini_cancel.",
@@ -117,11 +128,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
-  ],
+  ] : [],
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  if (!CLI_AVAILABLE) return reply("Gemini CLI not installed. Install it or use /claude-forge:frontend-agent instead.", true);
 
   switch (name) {
     case "gemini_exec": {
@@ -130,6 +142,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       const workFolder = (args?.workFolder && typeof args.workFolder === "string") ? args.workFolder : HOME;
       const sandbox = args?.sandbox || "yolo";
+      const config = loadConfig();
+      const model = config.geminiModel || null;
       const contextPrefix = readContextFiles(args?.context_files);
 
       const jobId = randomUUID().slice(0, 8);
@@ -139,12 +153,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // Gemini CLI: prompt via stdin, -y for auto-approve
       const cliArgs = [];
+      if (model) cliArgs.push("-m", model);
       if (sandbox === "yolo") cliArgs.push("-y");
       else if (sandbox === "auto-edit") cliArgs.push("--approval-mode", "auto_edit");
       // 'default' = no flag (interactive approval)
 
       try {
-        const proc = spawn(CLI, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
+        const proc = spawn(CLI_PATH, cliArgs, { cwd: workFolder, stdio: ["pipe", "pipe", "pipe"], env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" } });
         job._proc = proc;
         proc.stdin.write(NO_LOOP + contextPrefix + prompt);
         proc.stdin.end();

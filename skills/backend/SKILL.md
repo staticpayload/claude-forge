@@ -4,7 +4,7 @@ description: Delegate task directly to Codex CLI for backend work
 ---
 
 <Purpose>
-Direct delegation shortcut to Codex CLI (OpenAI gpt-5.3-codex) for backend work.
+Direct delegation shortcut to Codex CLI for backend work.
 Codex excels at API endpoints, data pipelines, scripts, CLI tools, infrastructure,
 database work, server-side logic, and build tooling.
 </Purpose>

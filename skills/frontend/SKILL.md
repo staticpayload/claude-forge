@@ -4,9 +4,9 @@ description: Delegate task directly to Gemini CLI for frontend/design work
 ---
 
 <Purpose>
-Direct delegation shortcut to Gemini CLI (Google gemini-2.5-pro, 1M context) for
-frontend and design work. Gemini excels at UI components, CSS/styling, React/Vue/Svelte,
-layouts, design systems, documentation, visual analysis, and large-context tasks.
+Direct delegation shortcut to Gemini CLI for frontend and design work.
+Gemini excels at UI components, CSS/styling, React/Vue/Svelte, layouts,
+design systems, documentation, visual analysis, and large-context tasks.
 </Purpose>
 
 <Use_When>

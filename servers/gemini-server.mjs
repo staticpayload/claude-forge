@@ -7,7 +7,7 @@ import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, relative } from "node:path";
 
 const HOME = homedir();
 const CONFIG_PATH = join(HOME, ".claude-forge", "config.json");
@@ -19,6 +19,7 @@ function loadConfig() {
   return {};
 }
 const MAX_JOBS = 50;
+const MAX_OUTPUT_BYTES = 10 * 1024 * 1024; // 10MB stdout/stderr cap
 const DEBUG = process.env.FORGE_GEMINI_DEBUG === "true";
 const log = (...a) => DEBUG && console.error("[forge:gemini]", ...a);
 
@@ -50,17 +51,22 @@ function prune() {
   }
 }
 
-// --- Context file reader ---
-function readContextFiles(files) {
+// --- Context file reader (path-validated) ---
+function readContextFiles(files, workFolder) {
   if (!Array.isArray(files) || files.length === 0) return "";
+  const baseDir = resolve(workFolder || HOME);
   const parts = [];
   for (const f of files) {
     try {
-      if (!existsSync(f)) continue;
-      const stat = statSync(f);
+      const resolved = resolve(f);
+      // Security: restrict to workFolder to prevent path traversal
+      const rel = relative(baseDir, resolved);
+      if (rel.startsWith("..") || rel.startsWith("/")) continue;
+      if (!existsSync(resolved)) continue;
+      const stat = statSync(resolved);
       if (!stat.isFile() || stat.size > 5 * 1024 * 1024) continue;
-      parts.push(`--- File: ${f} ---\n${readFileSync(f, "utf-8")}\n`);
-    } catch { /* skip */ }
+      parts.push(`--- File: ${f} ---\n${readFileSync(resolved, "utf-8")}\n`);
+    } catch { /* skip unreadable files */ }
   }
   return parts.length > 0 ? parts.join("\n") + "\n" : "";
 }
@@ -144,7 +150,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const sandbox = args?.sandbox || "yolo";
       const config = loadConfig();
       const model = config.geminiModel || null;
-      const contextPrefix = readContextFiles(args?.context_files);
+      const contextPrefix = readContextFiles(args?.context_files, workFolder);
 
       const jobId = randomUUID().slice(0, 8);
       const job = { id: jobId, status: "running", stdout: "", stderr: "", startTime: Date.now(), endTime: null, exitCode: null, promptPreview: prompt.slice(0, 200), workFolder, _proc: null };
@@ -163,10 +169,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         job._proc = proc;
         proc.stdin.write(NO_LOOP + contextPrefix + prompt);
         proc.stdin.end();
-        proc.stdout.on("data", (c) => { job.stdout += c.toString(); });
-        proc.stderr.on("data", (c) => { job.stderr += c.toString(); });
-        proc.on("close", (code) => { job.status = code === 0 ? "completed" : "failed"; job.exitCode = code; job.endTime = Date.now(); job._proc = null; log(`Job ${jobId} done: ${code}`); prune(); });
-        proc.on("error", (err) => { job.status = "failed"; job.stderr += `\nSpawn error: ${err.message}`; job.endTime = Date.now(); job._proc = null; });
+        proc.stdout.on("data", (c) => { if (job.stdout.length < MAX_OUTPUT_BYTES) job.stdout += c.toString(); });
+        proc.stderr.on("data", (c) => { if (job.stderr.length < MAX_OUTPUT_BYTES) job.stderr += c.toString(); });
+        proc.on("close", (code) => { if (job.status !== "cancelled") { job.status = code === 0 ? "completed" : "failed"; } job.exitCode = code; job.endTime = job.endTime || Date.now(); job._proc = null; log(`Job ${jobId} done: ${code}`); prune(); });
+        proc.on("error", (err) => { if (job.status !== "cancelled") { job.status = "failed"; } job.stderr += `\nSpawn error: ${err.message}`; job.endTime = job.endTime || Date.now(); job._proc = null; });
       } catch (err) {
         job.status = "failed"; job.stderr = `Spawn failed: ${err.message}`; job.endTime = Date.now();
       }
@@ -208,7 +214,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (!job) return reply(`No job "${jobId}".`, true);
       if (job.status !== "running") return reply(`Job ${jobId} already ${job.status}.`);
       if (job._proc) { job._proc.kill("SIGTERM"); setTimeout(() => { if (job._proc) try { job._proc.kill("SIGKILL"); } catch {} }, 5000); }
-      job.status = "cancelled"; job.endTime = Date.now(); job._proc = null;
+      job.status = "cancelled"; job.endTime = Date.now();
       return reply(`Job ${jobId} cancelled.`);
     }
 

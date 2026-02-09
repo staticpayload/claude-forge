@@ -34,9 +34,9 @@ Say "ULTRAWORK MODE ENABLED!" as your first response.`,
 
   search: {
     triggers: [
-      /\bsearch\b/i, /\bfind\b/i, /\blook\s+for\b/i, /\blocate\b/i,
-      /\bhunt\b/i, /\btrack\s+down\b/i, /\bwhere\s+is\b/i,
       /\bdeepsearch\b/i, /\bgrep\b/i, /\bripgrep\b/i,
+      /\bhunt\s+(for|down)\b/i, /\btrack\s+down\b/i, /\bwhere\s+is\b/i,
+      /\bsearch\s+(the\s+)?(codebase|repo|project|everywhere)\b/i,
       // Multilingual
       /\b검색\b/, /\b検索\b/, /\b搜索\b/, /\btìm\s+kiếm\b/i,
     ],
@@ -53,8 +53,7 @@ Maximize search effort:
   analyze: {
     triggers: [
       /\banalyze\b/i, /\banalysis\b/i, /\binvestigate\b/i, /\bdiagnose\b/i,
-      /\bdebug\b/i, /\bexplain\b/i, /\bunderstand\b/i, /\broot\s+cause\b/i,
-      /\bwhy\s+(does|is|did|doesn't|isn't)\b/i,
+      /\broot\s+cause\b/i, /\bwhy\s+(does|is|did|doesn't|isn't)\b/i,
       // Multilingual
       /\b분석\b/, /\b分析\b/, /\b調査\b/, /\bphân\s+tích\b/i,
     ],
@@ -71,7 +70,6 @@ Deep context gathering before any action:
   ultrathink: {
     triggers: [
       /\bultrathink\b/i, /\bthink\s+hard\b/i, /\bthink\s+deeply\b/i,
-      /\breason\b/i, /\bponder\b/i, /\bcareful(ly)?\b/i,
       /\bstep\s+by\s+step\b/i, /\bthink\s+through\b/i,
     ],
     injection: `[ULTRATHINK MODE]

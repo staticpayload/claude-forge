@@ -81,12 +81,6 @@ async function main() {
     const taskHint = getTaskHint(data);
     if (taskHint) parts.push(taskHint);
 
-    // Active mode reminder (keep agents on task)
-    const mode = getModeName();
-    if (mode && ["Task", "TaskOutput"].includes(toolName)) {
-      // Don't add boulder reminder for every tool, just delegation-related ones
-    }
-
     if (parts.length) return out(parts.join(" | "));
     return out();
   } catch {

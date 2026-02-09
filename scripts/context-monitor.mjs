@@ -10,6 +10,8 @@
  */
 
 import { readStdin } from "./lib/stdin.mjs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 
 // Token estimation
 const CHARS_PER_TOKEN = 4;
@@ -24,15 +26,22 @@ const RAPID_FIRE_MS = 500;
 const COOLDOWN_MS = 30_000;
 const MAX_WARNINGS = 5;
 
-// Simple in-memory state (persisted via env for hook continuity)
-const STATE_KEY = "FORGE_CONTEXT_MONITOR";
+// File-based state (each hook invocation is a separate process)
+const STATE_DIR = resolve(process.cwd(), ".forge");
+const STATE_FILE = resolve(STATE_DIR, ".context-monitor-state.json");
 
 function getState() {
   try {
-    const raw = process.env[STATE_KEY];
-    if (raw) return JSON.parse(raw);
+    if (existsSync(STATE_FILE)) return JSON.parse(readFileSync(STATE_FILE, "utf-8"));
   } catch {}
   return { estimatedTokens: 0, lastWarningTime: 0, warningCount: 0, lastAnalysisTime: 0 };
+}
+
+function saveState(state) {
+  try {
+    if (!existsSync(STATE_DIR)) mkdirSync(STATE_DIR, { recursive: true });
+    writeFileSync(STATE_FILE, JSON.stringify(state), "utf-8");
+  } catch {}
 }
 
 // Large output tools that consume significant context
@@ -79,6 +88,7 @@ async function main() {
       // Still track tokens but skip analysis
       const outputTokens = estimateTokens(data.output || data.tool_result || "");
       state.estimatedTokens += outputTokens;
+      saveState(state);
       return out();
     }
 
@@ -104,15 +114,18 @@ async function main() {
     if (usagePercent >= CRITICAL_THRESHOLD && shouldWarn) {
       state.warningCount++;
       state.lastWarningTime = now;
+      saveState(state);
       return out(CRITICAL_MESSAGE);
     }
 
     if (usagePercent >= WARNING_THRESHOLD && shouldWarn) {
       state.warningCount++;
       state.lastWarningTime = now;
+      saveState(state);
       return out(WARNING_MESSAGE);
     }
 
+    saveState(state);
     return out();
   } catch {
     return out();

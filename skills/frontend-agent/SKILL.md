@@ -19,11 +19,11 @@ users the same delegation workflow without requiring external CLI tools.
 1. Analyze the user's request to determine the type of frontend work.
 
 2. Delegate to the appropriate built-in agent via the Task tool:
-   - **UI components/layouts** -> `oh-my-claudecode:designer` (subagent_type, model: sonnet)
-   - **CSS/styling/themes** -> `oh-my-claudecode:designer` (subagent_type, model: sonnet)
-   - **React/Vue/Svelte implementation** -> `oh-my-claudecode:executor` (subagent_type, model: sonnet)
-   - **Design system/architecture** -> `oh-my-claudecode:designer` (subagent_type, model: sonnet)
-   - **Documentation/content** -> `oh-my-claudecode:writer` (subagent_type, model: haiku)
+   - **UI components/layouts** -> `claude-forge:designer` (subagent_type, model: sonnet)
+   - **CSS/styling/themes** -> `claude-forge:designer` (subagent_type, model: sonnet)
+   - **React/Vue/Svelte implementation** -> `claude-forge:executor` (subagent_type, model: sonnet)
+   - **Design system/architecture** -> `claude-forge:designer` (subagent_type, model: sonnet)
+   - **Documentation/content** -> `claude-forge:writer` (subagent_type, model: haiku)
 
 3. Pass the full user request as the prompt, including:
    - The working directory / project path

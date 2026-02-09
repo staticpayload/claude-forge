@@ -23,13 +23,13 @@ You have access to two external AI coding agents via MCP tools.
 Use ToolSearch("codex") and ToolSearch("gemini") to discover them before first use.
 
 ### Codex CLI — Backend Specialist
-**Tools:** `mcp__codex__codex_exec`, `codex_status`, `codex_cancel`, `codex_list`
+**Tools:** `mcp__codex__codex_exec`, `mcp__codex__codex_status`, `mcp__codex__codex_cancel`, `mcp__codex__codex_list`
 **Model:** GPT-5.3 Codex (128K context)
 **Best for:** API endpoints, data pipelines, scripts, CLI tools, infra, database, server-side logic, auth, middleware, workers.
 **Pattern:** `codex_exec(prompt, workFolder)` → poll `codex_status(jobId)` every 25s until done.
 
 ### Gemini CLI — Frontend Specialist
-**Tools:** `mcp__gemini__gemini_exec`, `gemini_status`, `gemini_cancel`, `gemini_list`
+**Tools:** `mcp__gemini__gemini_exec`, `mcp__gemini__gemini_status`, `mcp__gemini__gemini_cancel`, `mcp__gemini__gemini_list`
 **Model:** Gemini 3 Pro (1M context)
 **Best for:** UI components, CSS, React/Vue/Svelte, layouts, design systems, visual work, large-context tasks.
 **Pattern:** `gemini_exec(prompt, workFolder)` → poll `gemini_status(jobId)` every 25s until done.

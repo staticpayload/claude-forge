@@ -20,7 +20,7 @@ Routes to Gemini CLI (1M context, great for design) or designer agent.
    - Best for: large-context design work, multi-file component changes
    - 1M token context handles entire component libraries
 2. **Gemini unavailable** → use designer agent (sonnet)
-   - Task tool with subagent_type: "oh-my-claudecode:designer"
+   - Task tool with subagent_type: "claude-forge:designer"
    - Good for: single component changes, styling fixes
 </Routing>
 

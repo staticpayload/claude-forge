@@ -40,7 +40,7 @@ most bugs by itself with minimal intervention.
    - Simple fix (typo, missing import, wrong type): fix directly
    - Backend bug: delegate to Codex via `mcp__codex__codex_exec` or `backend-agent`
    - Frontend bug: delegate to Gemini via `mcp__gemini__gemini_exec` or `frontend-agent`
-   - Complex bug: use Task tool with `oh-my-claudecode:debugger` agent first
+   - Complex bug: use Task tool with `claude-forge:debugger` agent first
 
 4. **Verify the fix**:
    - Re-run the failing command (test, build, CI check)

@@ -66,7 +66,7 @@ const TECHNOLOGIES = [
   { tech: "docker", pattern: /\bdocker\b/i },
   { tech: "typescript", pattern: /\btypescript\b/i },
   { tech: "python", pattern: /\bpython\b/i },
-  { tech: "go", pattern: /\bgo(lang)?\b/i },
+  { tech: "go", pattern: /\bgolang\b/i },
 ];
 
 function detectTechnologies(text) {

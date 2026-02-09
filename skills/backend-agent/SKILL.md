@@ -19,11 +19,11 @@ the same delegation workflow without requiring external CLI tools.
 1. Analyze the user's request to determine the type of backend work.
 
 2. Delegate to the appropriate built-in agent via the Task tool:
-   - **API/server/infra work** -> `oh-my-claudecode:executor` (subagent_type, model: sonnet)
-   - **Database/data pipeline** -> `oh-my-claudecode:executor` (subagent_type, model: sonnet)
-   - **Scripts/CLI tools** -> `oh-my-claudecode:executor` (subagent_type, model: sonnet)
-   - **Complex architecture** -> `oh-my-claudecode:deep-executor` (subagent_type, model: opus)
-   - **Debug/investigate** -> `oh-my-claudecode:debugger` (subagent_type, model: sonnet)
+   - **API/server/infra work** -> `claude-forge:executor` (subagent_type, model: sonnet)
+   - **Database/data pipeline** -> `claude-forge:executor` (subagent_type, model: sonnet)
+   - **Scripts/CLI tools** -> `claude-forge:executor` (subagent_type, model: sonnet)
+   - **Complex architecture** -> `claude-forge:deep-executor` (subagent_type, model: opus)
+   - **Debug/investigate** -> `claude-forge:debugger` (subagent_type, model: sonnet)
 
 3. Pass the full user request as the prompt, including:
    - The working directory / project path

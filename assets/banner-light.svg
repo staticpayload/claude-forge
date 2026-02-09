@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f6f8fa"/>
+      <stop offset="50%" style="stop-color:#ffffff"/>
+      <stop offset="100%" style="stop-color:#f6f8fa"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0969da"/>
+      <stop offset="33%" style="stop-color:#8250df"/>
+      <stop offset="66%" style="stop-color:#bf3989"/>
+      <stop offset="100%" style="stop-color:#cf222e"/>
+    </linearGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0550ae"/>
+      <stop offset="100%" style="stop-color:#6639ba"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="200" fill="url(#bg)" rx="12" stroke="#d0d7de" stroke-width="1"/>
+  <!-- Decorative grid dots -->
+  <g opacity="0.08" fill="#0969da">
+    <circle cx="40" cy="40" r="1.5"/><circle cx="80" cy="40" r="1.5"/><circle cx="120" cy="40" r="1.5"/><circle cx="160" cy="40" r="1.5"/><circle cx="200" cy="40" r="1.5"/><circle cx="240" cy="40" r="1.5"/><circle cx="280" cy="40" r="1.5"/><circle cx="320" cy="40" r="1.5"/><circle cx="360" cy="40" r="1.5"/><circle cx="400" cy="40" r="1.5"/><circle cx="440" cy="40" r="1.5"/><circle cx="480" cy="40" r="1.5"/><circle cx="520" cy="40" r="1.5"/><circle cx="560" cy="40" r="1.5"/><circle cx="600" cy="40" r="1.5"/><circle cx="640" cy="40" r="1.5"/><circle cx="680" cy="40" r="1.5"/><circle cx="720" cy="40" r="1.5"/><circle cx="760" cy="40" r="1.5"/>
+    <circle cx="40" cy="80" r="1.5"/><circle cx="80" cy="80" r="1.5"/><circle cx="120" cy="80" r="1.5"/><circle cx="160" cy="80" r="1.5"/><circle cx="200" cy="80" r="1.5"/><circle cx="240" cy="80" r="1.5"/><circle cx="280" cy="80" r="1.5"/><circle cx="320" cy="80" r="1.5"/><circle cx="360" cy="80" r="1.5"/><circle cx="400" cy="80" r="1.5"/><circle cx="440" cy="80" r="1.5"/><circle cx="480" cy="80" r="1.5"/><circle cx="520" cy="80" r="1.5"/><circle cx="560" cy="80" r="1.5"/><circle cx="600" cy="80" r="1.5"/><circle cx="640" cy="80" r="1.5"/><circle cx="680" cy="80" r="1.5"/><circle cx="720" cy="80" r="1.5"/><circle cx="760" cy="80" r="1.5"/>
+    <circle cx="40" cy="120" r="1.5"/><circle cx="80" cy="120" r="1.5"/><circle cx="120" cy="120" r="1.5"/><circle cx="160" cy="120" r="1.5"/><circle cx="200" cy="120" r="1.5"/><circle cx="240" cy="120" r="1.5"/><circle cx="280" cy="120" r="1.5"/><circle cx="320" cy="120" r="1.5"/><circle cx="360" cy="120" r="1.5"/><circle cx="400" cy="120" r="1.5"/><circle cx="440" cy="120" r="1.5"/><circle cx="480" cy="120" r="1.5"/><circle cx="520" cy="120" r="1.5"/><circle cx="560" cy="120" r="1.5"/><circle cx="600" cy="120" r="1.5"/><circle cx="640" cy="120" r="1.5"/><circle cx="680" cy="120" r="1.5"/><circle cx="720" cy="120" r="1.5"/><circle cx="760" cy="120" r="1.5"/>
+    <circle cx="40" cy="160" r="1.5"/><circle cx="80" cy="160" r="1.5"/><circle cx="120" cy="160" r="1.5"/><circle cx="160" cy="160" r="1.5"/><circle cx="200" cy="160" r="1.5"/><circle cx="240" cy="160" r="1.5"/><circle cx="280" cy="160" r="1.5"/><circle cx="320" cy="160" r="1.5"/><circle cx="360" cy="160" r="1.5"/><circle cx="400" cy="160" r="1.5"/><circle cx="440" cy="160" r="1.5"/><circle cx="480" cy="160" r="1.5"/><circle cx="520" cy="160" r="1.5"/><circle cx="560" cy="160" r="1.5"/><circle cx="600" cy="160" r="1.5"/><circle cx="640" cy="160" r="1.5"/><circle cx="680" cy="160" r="1.5"/><circle cx="720" cy="160" r="1.5"/><circle cx="760" cy="160" r="1.5"/>
+  </g>
+  <!-- Decorative orbs -->
+  <circle cx="680" cy="50" r="80" fill="#0969da" opacity="0.03"/>
+  <circle cx="120" cy="150" r="100" fill="#8250df" opacity="0.03"/>
+  <circle cx="400" cy="100" r="120" fill="#bf3989" opacity="0.02"/>
+  <!-- Anvil icon -->
+  <g transform="translate(240, 52)" fill="url(#textGrad)">
+    <path d="M0 28 L8 0 L24 0 L32 28 Z" opacity="0.9"/>
+    <rect x="-6" y="28" width="44" height="8" rx="2" opacity="0.7"/>
+    <rect x="2" y="36" width="28" height="6" rx="1" opacity="0.5"/>
+  </g>
+  <!-- Title -->
+  <text x="290" y="82" font-family="'SF Mono', 'Fira Code', 'JetBrains Mono', monospace" font-size="42" font-weight="700" fill="url(#textGrad)" letter-spacing="-1">claude-forge</text>
+  <!-- Accent line -->
+  <rect x="290" y="92" width="220" height="3" rx="1.5" fill="url(#accent)" opacity="0.8"/>
+  <!-- Tagline -->
+  <text x="290" y="118" font-family="'SF Pro Display', -apple-system, 'Segoe UI', sans-serif" font-size="15" fill="#57606a" letter-spacing="0.5">Multi-CLI Delegation &amp; Orchestration for Claude Code</text>
+  <!-- Stats pills -->
+  <g transform="translate(290, 135)">
+    <rect x="0" y="0" width="72" height="24" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+    <text x="36" y="16" text-anchor="middle" font-family="'SF Pro Text', sans-serif" font-size="11" fill="#0969da">42 Skills</text>
+    <rect x="82" y="0" width="76" height="24" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+    <text x="120" y="16" text-anchor="middle" font-family="'SF Pro Text', sans-serif" font-size="11" fill="#8250df">30 Agents</text>
+    <rect x="168" y="0" width="82" height="24" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+    <text x="209" y="16" text-anchor="middle" font-family="'SF Pro Text', sans-serif" font-size="11" fill="#bf3989">2 MCP Svrs</text>
+    <rect x="260" y="0" width="72" height="24" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>
+    <text x="296" y="16" text-anchor="middle" font-family="'SF Pro Text', sans-serif" font-size="11" fill="#cf222e">5 Hooks</text>
+  </g>
+</svg>

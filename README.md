@@ -13,7 +13,7 @@
 
 Route backend work to [Codex CLI](https://github.com/openai/codex), frontend work to [Gemini CLI](https://github.com/google-gemini/gemini-cli), and orchestrate everything through 42 skills, intelligent auto-routing, and parallel execution modes.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
 [![Claude Code Plugin](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet.svg)](https://docs.anthropic.com/en/docs/claude-code)
 
@@ -734,7 +734,7 @@ Both servers use `@modelcontextprotocol/sdk` with StdioServerTransport. The patt
 
 ## License
 
-[MIT](LICENSE) - Use it however you want.
+[GPL-3.0](LICENSE) - Free software. Share alike.
 
 ---
 

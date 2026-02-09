@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Multi-CLI delegation and orchestration for Claude Code - route backend to Codex, frontend to Gemini",
   "type": "module",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "author": {
     "name": "staticpayload",
     "url": "https://github.com/staticpayload"

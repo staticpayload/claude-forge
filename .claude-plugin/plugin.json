@@ -8,7 +8,7 @@
   },
   "repository": "https://github.com/staticpayload/claude-forge",
   "homepage": "https://github.com/staticpayload/claude-forge",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "keywords": [
     "claude-code",
     "plugin",

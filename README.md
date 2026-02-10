@@ -16,6 +16,8 @@
 
 ---
 
+Multi-CLI delegation and orchestration for **Claude Code**.
+
 Route backend work to **Codex CLI** (GPT-5.3, 128K) and frontend work to **Gemini CLI** (1M context).
 Claude orchestrates everything — classifying tasks, delegating to the right model, and verifying results.
 
@@ -49,7 +51,7 @@ Already configured? It offers a quick CLAUDE.md update instead of the full wizar
 
 ## How it works
 
-Your prompt hits a keyword router (95 patterns). It classifies the task, scores complexity, and routes to the right destination.
+Your prompt hits a keyword router (100+ patterns). It classifies the task, scores complexity, and routes to the right destination.
 
 ```
 prompt → keyword router → classification
@@ -63,29 +65,102 @@ Complexity scoring decides the model tier: **Haiku** for simple work, **Sonnet**
 
 ---
 
-## Skills
+## Teams
 
-42 skills across 8 categories. Trigger them naturally or with `/claude-forge:<skill>`.
+Coordinated multi-agent teams using Claude Code native infrastructure. The flagship orchestration feature.
 
-### Execution modes
+```
+/claude-forge:team 4 "build the user dashboard with auth, API, components, and tests"
+```
 
-| Skill | Trigger | Description |
-|:------|:--------|:------------|
+```
+          ┌─────────────────────────────────────────┐
+          │              TEAM LEAD                   │
+          │   decompose → route → monitor → verify   │
+          └──────┬──────────┬──────────┬─────────────┘
+                 │          │          │
+         ┌───────▼──┐ ┌────▼─────┐ ┌──▼────────┐
+         │ Worker 1  │ │ Worker 2 │ │ Worker 3  │
+         │ executor  │ │ designer │ │ codex MCP │
+         │ (claude)  │ │ (claude) │ │ (GPT-5.3) │
+         └───────────┘ └──────────┘ └───────────┘
+```
+
+Workers communicate directly, claim tasks from a shared list, and respect file ownership boundaries.
+
+**Smart auto-routing** classifies each subtask and sends it to the best provider — Codex for backend, Gemini for frontend, Claude agents for everything else. No manual routing needed.
+
+### What makes it different
+
+| Feature | claude-forge | Others |
+|:--------|:-------------|:-------|
+| Worker-to-worker messaging | Peer-to-peer | Lead-only |
+| Task routing | Automatic per-subtask | Manual |
+| Dynamic scaling | Early finishers reassigned | Fixed |
+| Cascade mode | Auto-create test + review tasks | None |
+| Cross-CLI verification | Alternate model reviews work | None |
+| Team templates | 5 pre-built | None |
+| Build step required | No | Yes |
+
+### Templates
+
+Start fast with pre-built team compositions:
+
+| Template | Workers | Use case |
+|:---------|:--------|:---------|
+| `build-team` | architect + executor + designer | Feature development |
+| `review-team` | style + quality + security + perf | Code review |
+| `fullstack-team` | architect + executor + designer + test-engineer | End-to-end features |
+| `audit-team` | security + quality + code reviewers | Security audit |
+| `debug-team` | explorer + debugger + executor | Bug investigation |
+
+```
+/claude-forge:team fullstack-team "implement the billing system"
+```
+
+[Full teams documentation →](docs/teams.md)
+
+---
+
+## Swarm
+
+Lightweight fire-and-forget parallel execution. No team overhead — just spawn agents and collect results.
+
+```
+/claude-forge:swarm 5 "write unit tests for each service in src/services/"
+```
+
+Swarm decomposes the task, routes each subtask to the best provider, spawns all agents immediately, and reports results. Wave-based spawning handles 5+ tasks without hitting concurrency limits.
+
+Use **team** when tasks need coordination. Use **swarm** when they're independent.
+
+[Full swarm documentation →](docs/swarm.md)
+
+---
+
+## Execution Modes
+
+9 modes that compose together. [Full guide →](docs/modes.md)
+
+| Mode | Trigger | Description |
+|:-----|:--------|:------------|
 | `autopilot` | "autopilot", "build me" | Full pipeline — expand, plan, execute, QA, validate |
 | `ralph` | "ralph", "don't stop" | Persistence loop — work, verify, repeat until done |
 | `ultrawork` | "ulw", "ultrawork" | Parallel engine — decompose, assign ownership, run simultaneously |
 | `ecomode` | "ecomode", "budget" | Cost-efficient model routing — Haiku/Sonnet preference |
 | `ultraqa` | "ultraqa" | QA cycling — test, diagnose, fix, repeat |
 | `ultrapilot` | "ultrapilot" | Parallel autopilot with file ownership partitioning |
+| `team` | "forge team", template names | Coordinated agents with shared task list |
+| `swarm` | "swarm", "fire and forget" | Fire-and-forget parallel execution |
+| `pipeline` | "pipeline", "chain agents" | Sequential agent chains with data passing |
 
 Ralph includes ultrawork. Ecomode modifies any mode. Autopilot transitions to ralph or ultraqa.
 
-### Orchestration
+---
 
-| Skill | Description |
-|:------|:------------|
-| `team` | N coordinated agents on a shared task list with file ownership |
-| `pipeline` | Sequential agent chains with data passing between stages |
+## Skills
+
+42+ skills across 8 categories. Trigger them naturally or with `/claude-forge:<skill>`.
 
 ### CLI delegation
 
@@ -152,7 +227,7 @@ Say these naturally in any prompt. They compose together.
 
 ## Agents
 
-30 agents with automatic model routing.
+32 agents with automatic model routing. [Full catalog →](docs/agents.md)
 
 | Lane | Agents |
 |:-----|:-------|
@@ -160,7 +235,16 @@ Say these naturally in any prompt. They compose together.
 | Review | `style-reviewer` · `quality-reviewer` · `api-reviewer` · `security-reviewer` · `performance-reviewer` · `code-reviewer` |
 | Domain | `dependency-expert` · `test-engineer` · `build-fixer` · `designer` · `writer` · `qa-tester` · `scientist` · `git-master` · `quality-strategist` |
 | Product | `product-manager` · `ux-researcher` · `information-architect` · `product-analyst` |
-| Coordination | `critic` · `vision` · `researcher` |
+| Coordination | `critic` · `vision` · `researcher` · `team-lead` · `team-worker` |
+
+### Team compositions
+
+```
+Feature:    analyst → planner → executor → test-engineer → quality-reviewer → verifier
+Bug fix:    explorer + debugger → executor → test-engineer → verifier
+Review:     style-reviewer + quality-reviewer + api-reviewer + security-reviewer
+Full-stack: planner → [Codex: backend] + [Gemini: frontend] → test-engineer → verifier
+```
 
 ---
 
@@ -179,7 +263,7 @@ Rate limits, CLI availability, active jobs, cost estimate, context usage. Config
 
 ## Architecture
 
-Two MCP servers handle CLI delegation:
+Two MCP servers handle CLI delegation. [Full guide →](docs/cli-delegation.md)
 
 **forge-codex** — Spawns `codex exec --yolo` via stdin. GPT-5.3, 128K context.
 Tools: `codex_exec` · `codex_status` · `codex_cancel` · `codex_list`
@@ -199,13 +283,21 @@ claude-forge/
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
-├── agents/                  30 agent system prompts
+├── agents/                  32 agent system prompts
+│   ├── team-lead.md         team coordinator (opus)
+│   └── team-worker.md       team worker (sonnet)
+├── docs/                    feature documentation
+│   ├── teams.md
+│   ├── swarm.md
+│   ├── modes.md
+│   ├── agents.md
+│   └── cli-delegation.md
 ├── hooks/hooks.json         5 lifecycle hooks
 ├── hud/
 │   ├── forge-hud.mjs        status bar renderer
 │   └── usage-api.mjs        Anthropic Usage API
 ├── scripts/
-│   ├── keyword-router.mjs   95 regex patterns
+│   ├── keyword-router.mjs   100+ regex patterns
 │   ├── session-init.mjs     CLI detection
 │   ├── context-monitor.mjs  token tracking
 │   ├── pre-tool-enforcer.mjs
@@ -214,7 +306,10 @@ claude-forge/
 ├── servers/
 │   ├── codex-server.mjs     Codex MCP server
 │   └── gemini-server.mjs    Gemini MCP server
-├── skills/                  42 skill definitions
+├── skills/                  42+ skill definitions
+│   ├── team/SKILL.md        1600 lines — teams orchestration
+│   ├── swarm/SKILL.md       fire-and-forget parallel
+│   └── ...
 └── templates/CLAUDE.md      injected instructions
 ```
 
@@ -222,10 +317,30 @@ claude-forge/
 
 ---
 
+## Documentation
+
+| Guide | Description |
+|:------|:------------|
+| [Teams](docs/teams.md) | Coordinated multi-agent teams — templates, lifecycle, smart routing, cascade |
+| [Swarm](docs/swarm.md) | Fire-and-forget parallel execution — wave spawning, routing |
+| [Execution Modes](docs/modes.md) | All 9 modes — autopilot, ralph, ultrawork, teams, and more |
+| [Agents](docs/agents.md) | Full catalog of 32 agents — models, capabilities, compositions |
+| [CLI Delegation](docs/cli-delegation.md) | Codex and Gemini integration — routing, MCP tools, fallbacks |
+
+---
+
 ## Examples
 
 ```
 autopilot: Build user auth with JWT, password hashing, rate limiting, and email verification
+```
+
+```
+forge team fullstack-team: Implement the entire checkout flow with Stripe integration
+```
+
+```
+swarm 5: Write comprehensive tests for every module in src/services/
 ```
 
 ```

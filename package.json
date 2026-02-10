@@ -1,6 +1,6 @@
 {
   "name": "claude-forge-plugin",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Multi-CLI delegation and orchestration for Claude Code - route backend to Codex, frontend to Gemini",
   "type": "module",
   "license": "GPL-3.0-only",

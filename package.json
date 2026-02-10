@@ -1,5 +1,5 @@
 {
-  "name": "claude-forge",
+  "name": "claude-forge-plugin",
   "version": "1.0.0",
   "description": "Multi-CLI delegation and orchestration for Claude Code - route backend to Codex, frontend to Gemini",
   "type": "module",

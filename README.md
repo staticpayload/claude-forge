@@ -12,6 +12,7 @@ Route backend to **Codex CLI** (GPT-5.3) &bull; Frontend to **Gemini CLI** (1M c
 
 <br>
 
+[![npm](https://img.shields.io/npm/v/claude-forge-plugin.svg?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/claude-forge-plugin)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIG9wYWNpdHk9IjAuMyIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiLz48L3N2Zz4=)](https://docs.anthropic.com/en/docs/claude-code)
@@ -61,14 +62,26 @@ Route backend to **Codex CLI** (GPT-5.3) &bull; Frontend to **Gemini CLI** (1M c
 
 ## ⚡ Quick Start
 
+### Install via npm
+
+```bash
+npm install -g claude-forge-plugin
+```
+
+### Or install as Claude Code plugin
+
 ```bash
 # 1. Add the marketplace
 /plugin marketplace add https://github.com/staticpayload/claude-forge
 
 # 2. Install
 /plugin install claude-forge
+```
 
-# 3. One-time setup
+### Then run the setup wizard
+
+```bash
+# Interactive onboarding — CLI detection, model config, HUD, teams
 /claude-forge:setup
 ```
 
@@ -79,6 +92,8 @@ Then try:
 ```
 
 > 💡 **No CLIs needed** &mdash; forge works with Claude's built-in agents. Install [Codex CLI](https://github.com/openai/codex) and/or [Gemini CLI](https://github.com/google-gemini/gemini-cli) later for full delegation power.
+>
+> **Updating?** Run `/claude-forge:setup` again &mdash; it detects existing config and offers a quick "Update CLAUDE.md only" option. Use `--force` to re-run the full wizard.
 
 <br>
 <img src="assets/divider.svg" width="100%" height="4">
@@ -610,7 +625,7 @@ Pure ESM JavaScript, no build step. Contributions welcome.
 
 <br>
 
-[GitHub](https://github.com/staticpayload/claude-forge) &nbsp;&nbsp;&bull;&nbsp;&nbsp; [Issues](https://github.com/staticpayload/claude-forge/issues) &nbsp;&nbsp;&bull;&nbsp;&nbsp; [Discussions](https://github.com/staticpayload/claude-forge/discussions)
+[GitHub](https://github.com/staticpayload/claude-forge) &nbsp;&nbsp;&bull;&nbsp;&nbsp; [npm](https://www.npmjs.com/package/claude-forge-plugin) &nbsp;&nbsp;&bull;&nbsp;&nbsp; [Issues](https://github.com/staticpayload/claude-forge/issues) &nbsp;&nbsp;&bull;&nbsp;&nbsp; [Discussions](https://github.com/staticpayload/claude-forge/discussions)
 
 <br>
 

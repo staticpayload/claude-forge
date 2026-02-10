@@ -12,10 +12,10 @@ Route backend to **Codex CLI** (GPT-5.3) &bull; Frontend to **Gemini CLI** (1M c
 
 <br>
 
-[![npm](https://img.shields.io/npm/v/claude-forge-plugin.svg?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/claude-forge-plugin)
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg?style=for-the-badge)](LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-blueviolet.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIG9wYWNpdHk9IjAuMyIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiLz48L3N2Zz4=)](https://docs.anthropic.com/en/docs/claude-code)
+[![npm](https://img.shields.io/npm/v/claude-forge-plugin.svg?style=for-the-badge&logo=npm&logoColor=white&color=cc2200)](https://www.npmjs.com/package/claude-forge-plugin)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-991b1b.svg?style=for-the-badge)](LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18-ff4444.svg?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Plugin-dc2626.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIG9wYWNpdHk9IjAuMyIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiLz48L3N2Zz4=)](https://docs.anthropic.com/en/docs/claude-code)
 
 <br>
 
@@ -114,14 +114,14 @@ flowchart TD
     D --> F
     D --> G
 
-    style A fill:#1f6feb,stroke:#58a6ff,color:#fff
-    style B fill:#8250df,stroke:#bc8cff,color:#fff
-    style C fill:#bf3989,stroke:#f778ba,color:#fff
-    style D fill:#bf3989,stroke:#f778ba,color:#fff
-    style E fill:#57606a,stroke:#8b949e,color:#fff
-    style F fill:#da3633,stroke:#ff7b72,color:#fff
-    style G fill:#1a7f37,stroke:#3fb950,color:#fff
-    style H fill:#9a6700,stroke:#d29922,color:#fff
+    style A fill:#cc2200,stroke:#ff4444,color:#fff
+    style B fill:#991b1b,stroke:#ff4444,color:#fff
+    style C fill:#7f1d1d,stroke:#ff6b35,color:#fff
+    style D fill:#7f1d1d,stroke:#ff6b35,color:#fff
+    style E fill:#451a1a,stroke:#8b5555,color:#fff
+    style F fill:#b91c1c,stroke:#ff6b6b,color:#fff
+    style G fill:#9a3412,stroke:#ff6b35,color:#fff
+    style H fill:#78350f,stroke:#ffaa33,color:#fff
 ```
 
 <table>
@@ -416,16 +416,16 @@ flowchart LR
     G["PostToolUse"] --> H["Context Monitor\n75%/90% Warnings"]
     I["Stop"] --> J["Continuation\nEnforcement"]
 
-    style A fill:#1a7f37,stroke:#3fb950,color:#fff
-    style C fill:#1f6feb,stroke:#58a6ff,color:#fff
-    style E fill:#9a6700,stroke:#d29922,color:#fff
-    style G fill:#8250df,stroke:#bc8cff,color:#fff
-    style I fill:#da3633,stroke:#ff7b72,color:#fff
-    style B fill:#0d1117,stroke:#3fb950,color:#8b949e
-    style D fill:#0d1117,stroke:#58a6ff,color:#8b949e
-    style F fill:#0d1117,stroke:#d29922,color:#8b949e
-    style H fill:#0d1117,stroke:#bc8cff,color:#8b949e
-    style J fill:#0d1117,stroke:#ff7b72,color:#8b949e
+    style A fill:#cc2200,stroke:#ff4444,color:#fff
+    style C fill:#b91c1c,stroke:#ff6b6b,color:#fff
+    style E fill:#9a3412,stroke:#ff6b35,color:#fff
+    style G fill:#991b1b,stroke:#ff4444,color:#fff
+    style I fill:#7f1d1d,stroke:#cc2200,color:#fff
+    style B fill:#1a0a0a,stroke:#ff4444,color:#8b7575
+    style D fill:#1a0a0a,stroke:#ff6b6b,color:#8b7575
+    style F fill:#1a0a0a,stroke:#ff6b35,color:#8b7575
+    style H fill:#1a0a0a,stroke:#ff4444,color:#8b7575
+    style J fill:#1a0a0a,stroke:#cc2200,color:#8b7575
 ```
 
 <details>

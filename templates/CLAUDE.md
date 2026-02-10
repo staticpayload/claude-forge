@@ -161,7 +161,8 @@ Skills are user-invocable commands (`/claude-forge:<name>`). Trigger patterns ar
 - `ultrapilot` ("ultrapilot", "parallel build") — Parallel autopilot with file ownership
 
 ### Orchestration
-- `team` ("forge team", "spawn agents") — N coordinated agents on shared task list
+- `team` ("forge team", "team N:type", template names) — N coordinated agents with smart routing, cascade, cross-CLI verification
+- `swarm` ("swarm", "fire and forget") — Lightweight fire-and-forget parallel execution
 - `pipeline` ("pipeline", "chain agents") — Sequential agent chains with data passing
 
 ### Planning & Research
@@ -234,6 +235,13 @@ Skills are user-invocable commands (`/claude-forge:<name>`). Trigger patterns ar
 
 **Architecture Decision:**
   analyst → architect → critic → planner
+
+**Team Templates (pre-built):**
+  `/claude-forge:team build-team` — architect + executor + designer (3 workers)
+  `/claude-forge:team review-team` — style + quality + security + performance reviewers (4 workers)
+  `/claude-forge:team fullstack-team` — architect + executor + designer + test-engineer (4 workers)
+  `/claude-forge:team audit-team` — security + quality + code reviewers (3 workers)
+  `/claude-forge:team debug-team` — explorer + debugger + executor (3 workers)
 </team_compositions>
 
 ---
@@ -302,9 +310,25 @@ Execution mode state stored in `.forge/` at git worktree root:
 - `.forge/autopilot-state.json` — Autopilot progress (resumable)
 - `.forge/ralph-state.json` — Ralph loop state
 - `.forge/ultrawork-state.json` — Ultrawork assignments
+- `.forge/team-state.json` — Active team (workers, tasks, phase, routing)
+- `.forge/worker-*-failure.json` — Worker failure sidecars (team mode)
 - `.forge/token-tracking.jsonl` — Token usage log
 
 Cancel any mode: `/claude-forge:cancel` (auto-detects) or `/claude-forge:cancel --force` (clears all).
+
+### Team Tools (Claude Code Native)
+
+| Tool | Purpose |
+|------|---------|
+| `TeamCreate` | Create a named team for coordinated agents |
+| `TeamDelete` | Delete a team and stop all agents |
+| `SendMessage` | Send messages between team members (DM, broadcast, shutdown) |
+| `TaskCreate` | Create tasks on shared task list |
+| `TaskUpdate` | Update task status, owner, dependencies |
+| `TaskList` | List all tasks and their status |
+| `TaskGet` | Get full task details |
+
+**Requires:** `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json env.
 </state>
 
 ## Anti-Loop

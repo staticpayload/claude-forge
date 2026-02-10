@@ -982,7 +982,7 @@ echo "$EXISTING" | jq \
   --argjson maxAgents MAX_AGENTS \
   --arg agentType "AGENT_TYPE" \
   --arg model "MODEL" \
-  '. + {team: {maxAgents: $maxAgents, defaultAgentType: $agentType, defaultModel: $model, monitorIntervalMs: 30000, shutdownTimeoutMs: 15000}}' > "$CONFIG_FILE"
+  '. + {team: {maxAgents: $maxAgents, defaultAgentType: $agentType, defaultModel: $model, monitorIntervalMs: 30000, shutdownTimeoutMs: 15000, watchdogWarningMs: 300000, watchdogReassignMs: 600000, maxConsecutiveErrors: 3, enableCascade: true, enableCrossCliVerification: true}}' > "$CONFIG_FILE"
 
 echo "Team configuration saved:"
 echo "  Max agents: MAX_AGENTS"
@@ -1144,10 +1144,17 @@ SKILLS (42 available):
     /claude-forge:cancel         Cancel active mode
 
 TEAMS:
-Spawn coordinated agents with shared task lists and real-time messaging:
+Spawn coordinated agents with smart routing, cascade mode, and cross-CLI verification:
 - /claude-forge:team 3:executor "fix all TypeScript errors"
-- /claude-forge:team 5:build-fixer "fix build errors in src/"
-Teams use Claude Code native tools (TeamCreate/SendMessage/TaskCreate).
+- /claude-forge:team build-team "implement the auth module"
+- /claude-forge:team review-team "review the API changes"
+- /claude-forge:team fullstack-team "build the dashboard"
+Templates: build-team, review-team, fullstack-team, audit-team, debug-team
+
+SWARM:
+Fire-and-forget parallel execution (no team overhead):
+- /claude-forge:swarm 5 "add JSDoc to all exported functions"
+- /claude-forge:swarm "fix lint errors across the project"
 
 HUD STATUSLINE:
 The status bar shows forge state: rate limits (5h + weekly), CLI availability,
